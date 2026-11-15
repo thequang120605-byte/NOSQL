@@ -1,0 +1,12 @@
+{
+  "update_seed_user": "Mã người dùng (User ID) không được để trống",
+  "update_seed_product": "Mã sản phẩm (Product ID) không được để trống",
+  "stock_after_create": 24,
+  "returned_status_on_cancel": "PENDING",
+  "actual_status_on_cancel": "CANCELLED",
+  "stock_after_second_cancel": 26,
+  "payment_after_cancel": "SUCCESS",
+  "successful_receipts_same_order": 2,
+  "missing_product_accepted": 100.0,
+  "history_count_after_4_events": 1
+}

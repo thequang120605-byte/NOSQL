@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}Quản Lý Khách Hàng - FDB Commerce{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <div class="d-flex align-items-center gap-2">
+            <div class="p-2 rounded-3 bg-primary bg-opacity-20 border border-primary border-opacity-30 text-info">
+                <i class="fa-solid fa-users fs-5"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold mb-0 text-white">Quản Lý Tài Khoản Khách Hàng</h4>
+                <p class="text-muted small mb-0">Quản lý hồ sơ định danh, số dư tài khoản & chỉ mục tra cứu email trên FoundationDB</p>
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-primary px-3 py-2 rounded-3 shadow d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addUserModal">
+        <i class="fa-solid fa-user-plus"></i>
+        <span>Thêm Khách Hàng Mới</span>
+    </button>
+</div>
+
+<!-- Users List Table -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <i class="fa-solid fa-id-card text-info"></i>
+            <h6 class="fw-bold mb-0 text-white">Danh Sách Người Dùng ({{ users|length }})</h6>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-dark text-info border border-info border-opacity-30 font-monospace small">
+                Prefix: ('user', user_id)
+            </span>
+            <span class="badge bg-dark text-info border border-info border-opacity-30 font-monospace small">
+                Index: idx_users_email
+            </span>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-custom align-middle">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Mã Người Dùng</th>
+                        <th>Họ và Tên</th>
+                        <th>Email Định Danh</th>
+                        <th>Số Điện Thoại</th>
+                        <th>Vai Trò</th>
+                        <th>Số Dư Ví</th>
+                        <th>Trạng Thái</th>
+                        <th class="text-end pe-4">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td class="ps-4">
+                            <span class="badge bg-dark text-info border border-info border-opacity-30 font-monospace">{{ u.user_id }}</span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar-circle">{{ u.name[:2].upper() }}</div>
+                                <div>
+                                    <div class="fw-bold text-white">{{ u.name }}</div>
+                                    <div class="text-muted small" style="font-size: 0.75rem;">
+                                        <i class="fa-solid fa-location-dot text-danger opacity-75 me-1"></i>{{ u.address or 'Việt Nam' }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <code class="text-info font-monospace">{{ u.email }}</code>
+                        </td>
+                        <td class="text-light font-monospace">{{ u.phone or '---' }}</td>
+                        <td>
+                            {% if u.role == 'admin' %}
+                                <span class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-30 rounded-pill px-3">Quản trị viên</span>
+                            {% elif u.role == 'merchant' %}
+                                <span class="badge bg-warning bg-opacity-20 text-warning border border-warning border-opacity-30 rounded-pill px-3">Đối tác bán hàng</span>
+                            {% else %}
+                                <span class="badge bg-primary bg-opacity-20 text-info border border-primary border-opacity-30 rounded-pill px-3">Khách hàng</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="fw-bold text-info fs-6 font-monospace">{{ "{:,.0f}".format(u.balance) }} đ</span>
+                        </td>
+                        <td>
+                            {% if u.status == 'active' %}
+                                <span class="status-pill status-SUCCESS">
+                                    <span class="status-dot"></span> Đang hoạt động
+                                </span>
+                            {% else %}
+                                <span class="status-pill status-FAILED">
+                                    <span class="status-dot"></span> Bị tạm khóa
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-4">
+                            <button class="btn btn-sm btn-outline-info rounded-2 me-1" onclick='openEditModal({{ u.to_dict() | tojson }})' title="Chỉnh sửa">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger rounded-2" onclick='deleteUser({{ u.user_id | tojson }}, {{ u.name | tojson }})' title="Xóa">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">Chưa có người dùng nào được khởi tạo trong FoundationDB</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Thêm Người Dùng -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-white">Thêm Khách Hàng Mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addUserForm" onsubmit="submitAddUser(event)">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-light">Mã Định Danh (User ID) <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control font-monospace" name="user_id" required placeholder="Ví dụ: U104">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-light">Họ và Tên <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="name" required placeholder="Ví dụ: Nguyen Van A">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-light">Email Duy Nhất (Tự động cập nhật vào idx_users_email) <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" name="email" required placeholder="email@domain.com">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-light">Số Điện Thoại</label>
+                            <input type="text" class="form-control font-monospace" name="phone" placeholder="090...">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-light">Số Dư Ban Đầu (VNĐ)</label>
+                            <input type="number" class="form-control font-monospace" name="balance" value="5000000" min="0">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-light">Địa Chỉ Mặc Định</label>
+                        <input type="text" class="form-control" name="address" placeholder="TP. Hồ Chí Minh, Việt Nam">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary px-4">Tạo Tài Khoản</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Sửa Người Dùng -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-white">Cập Nhật Hồ Sơ Người Dùng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editUserForm" onsubmit="submitEditUser(event)">
+                <div class="modal-body p-4">
+                    <input type="hidden" name="user_id" id="edit_user_id">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-light">Mã Khách Hàng</label>
+                        <input type="text" class="form-control font-monospace" id="display_user_id" disabled style="background: rgba(15, 23, 42, 0.9);">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-light">Họ và Tên</label>
+                        <input type="text" class="form-control" name="name" id="edit_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-light">Email</label>
+                        <input type="email" class="form-control" name="email" id="edit_email" required>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-light">Số Điện Thoại</label>
+                            <input type="text" class="form-control font-monospace" name="phone" id="edit_phone">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-light">Trạng Thái Tài Khoản</label>
+                            <select class="form-select" name="status" id="edit_status">
+                                <option value="active">Đang hoạt động (active)</option>
+                                <option value="locked">Khóa tài khoản (locked)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-light">Số Dư Ví (VNĐ)</label>
+                        <input type="number" class="form-control font-monospace" name="balance" id="edit_balance" min="0">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-light">Địa Chỉ</label>
+                        <input type="text" class="form-control" name="address" id="edit_address">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary px-4">Lưu Cập Nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function submitAddUser(e) {
+    e.preventDefault();
+    const form = e.target;
+    const payload = {
+        user_id: form.user_id.value,
+        name: form.name.value,
+        email: form.email.value,
+        phone: form.phone.value,
+        balance: parseFloat(form.balance.value) || 0,
+        address: form.address.value,
+        status: 'active'
+    };
+
+    try {
+        const resp = await fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const res = await resp.json();
+        if (res.status === 'success') {
+            showSuccessAlert('Đã thêm khách hàng thành công!', () => location.reload());
+        } else {
+            showErrorAlert(res.message);
+        }
+    } catch (err) {
+        showErrorAlert(err.message);
+    }
+}
+
+function openEditModal(u) {
+    document.getElementById('edit_user_id').value = u.user_id;
+    document.getElementById('display_user_id').value = u.user_id;
+    document.getElementById('edit_name').value = u.name;
+    document.getElementById('edit_email').value = u.email;
+    document.getElementById('edit_phone').value = u.phone || '';
+    document.getElementById('edit_status').value = u.status || 'active';
+    document.getElementById('edit_balance').value = u.balance || 0;
+    document.getElementById('edit_address').value = u.address || '';
+    new bootstrap.Modal(document.getElementById('editUserModal')).show();
+}
+
+async function submitEditUser(e) {
+    e.preventDefault();
+    const form = e.target;
+    const userId = form.user_id.value;
+    const payload = {
+        name: form.name.value,
+        email: form.email.value,
+        phone: form.phone.value,
+        status: form.status.value,
+        balance: parseFloat(form.balance.value) || 0,
+        address: form.address.value
+    };
+
+    try {
+        const resp = await fetch(`/api/users/${userId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const res = await resp.json();
+        if (res.status === 'success') {
+            showSuccessAlert('Cập nhật người dùng thành công!', () => location.reload());
+        } else {
+            showErrorAlert(res.message);
+        }
+    } catch (err) {
+        showErrorAlert(err.message);
+    }
+}
+
+async function deleteUser(userId, name) {
+    const confirm = await Swal.fire({
+        title: 'Xóa tài khoản này?',
+        text: `Bạn có chắc muốn xóa khách hàng '${name}' (${userId})?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Đồng ý xóa',
+        cancelButtonText: 'Hủy'
+    });
+
+    if (confirm.isConfirmed) {
+        try {
+            const resp = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+            const res = await resp.json();
+            if (res.status === 'success') {
+                showSuccessAlert('Đã xóa khách hàng thành công!', () => location.reload());
+            } else {
+                showErrorAlert(res.message);
+            }
+        } catch (err) {
+            showErrorAlert(err.message);
+        }
+    }
+}
+</script>
+{% endblock %}

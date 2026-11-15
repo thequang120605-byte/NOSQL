@@ -1,0 +1,835 @@
+[
+  {
+    "path": ".gitignore",
+    "bytes": 242,
+    "sha256": "9b684267e821cdb1c4ae68592f5e31630ac81517d9940cd2da164f8077446fc3"
+  },
+  {
+    "path": "README.md",
+    "bytes": 8802,
+    "sha256": "bf7c1e91c7001ffdf9fceb63eb970212245bffb8edba9e71a8eec680748a7097"
+  },
+  {
+    "path": "app/config.py",
+    "bytes": 761,
+    "sha256": "1b73dd28e6a1ef73e8001304d02bca7da64a75496f26c75a94593566c742227f",
+    "symbols": [
+      {
+        "name": "Config",
+        "line": 6
+      }
+    ]
+  },
+  {
+    "path": "app/database/__init__.py",
+    "bytes": 343,
+    "sha256": "8df3a290f07f7b3c5781f57d9e2a76b61e4a658aa8fa136b61e9d79412bb79e7",
+    "symbols": []
+  },
+  {
+    "path": "app/database/connection.py",
+    "bytes": 4021,
+    "sha256": "650bfb2ddee0c435a8f8dc78a89b7eed0c0d6f950f965552df2c194d8bca3f15",
+    "symbols": [
+      {
+        "name": "FoundationDBConnection",
+        "line": 7
+      },
+      {
+        "name": "__new__",
+        "line": 13
+      },
+      {
+        "name": "__init__",
+        "line": 19
+      },
+      {
+        "name": "_initialize_connection",
+        "line": 34
+      },
+      {
+        "name": "get_db",
+        "line": 65
+      },
+      {
+        "name": "transactional",
+        "line": 71
+      },
+      {
+        "name": "get_status_info",
+        "line": 79
+      }
+    ]
+  },
+  {
+    "path": "app/database/fdb_engine.py",
+    "bytes": 9761,
+    "sha256": "b495419083d737de19ab65ce9571e1144dbfb2d65621dfd592327a67ea7d5c3f",
+    "symbols": [
+      {
+        "name": "FDBConflictError",
+        "line": 8
+      },
+      {
+        "name": "FDBTransactionError",
+        "line": 12
+      },
+      {
+        "name": "_to_bytes",
+        "line": 16
+      },
+      {
+        "name": "LocalTransaction",
+        "line": 25
+      },
+      {
+        "name": "FDBLocalEngine",
+        "line": 170
+      },
+      {
+        "name": "__init__",
+        "line": 27
+      },
+      {
+        "name": "get",
+        "line": 36
+      },
+      {
+        "name": "set",
+        "line": 55
+      },
+      {
+        "name": "clear",
+        "line": 66
+      },
+      {
+        "name": "clear_range",
+        "line": 73
+      },
+      {
+        "name": "get_range",
+        "line": 84
+      },
+      {
+        "name": "__getitem__",
+        "line": 124
+      },
+      {
+        "name": "__setitem__",
+        "line": 129
+      },
+      {
+        "name": "__delitem__",
+        "line": 132
+      },
+      {
+        "name": "get_range_startswith",
+        "line": 138
+      },
+      {
+        "name": "commit",
+        "line": 144
+      },
+      {
+        "name": "rollback",
+        "line": 163
+      },
+      {
+        "name": "__init__",
+        "line": 179
+      },
+      {
+        "name": "load_from_disk",
+        "line": 186
+      },
+      {
+        "name": "save_to_disk",
+        "line": 199
+      },
+      {
+        "name": "create_transaction",
+        "line": 219
+      },
+      {
+        "name": "transactional",
+        "line": 222
+      },
+      {
+        "name": "get",
+        "line": 249
+      },
+      {
+        "name": "set",
+        "line": 253
+      },
+      {
+        "name": "clear",
+        "line": 258
+      },
+      {
+        "name": "clear_all",
+        "line": 263
+      },
+      {
+        "name": "get_range",
+        "line": 268
+      },
+      {
+        "name": "count_keys",
+        "line": 272
+      },
+      {
+        "name": "wrapper",
+        "line": 228
+      }
+    ]
+  },
+  {
+    "path": "app/database/schema.py",
+    "bytes": 2557,
+    "sha256": "17fb6f080276284a1148d2ac95b511ae8099c298222347696d7ae8ba7b2fe657",
+    "symbols": [
+      {
+        "name": "pack_key",
+        "line": 14
+      },
+      {
+        "name": "unpack_key",
+        "line": 18
+      },
+      {
+        "name": "get_prefix_range",
+        "line": 22
+      },
+      {
+        "name": "user_key",
+        "line": 28
+      },
+      {
+        "name": "order_key",
+        "line": 31
+      },
+      {
+        "name": "order_item_key",
+        "line": 34
+      },
+      {
+        "name": "transaction_key",
+        "line": 37
+      },
+      {
+        "name": "order_history_key",
+        "line": 40
+      },
+      {
+        "name": "product_key",
+        "line": 43
+      },
+      {
+        "name": "idx_user_orders_key",
+        "line": 47
+      },
+      {
+        "name": "idx_status_orders_key",
+        "line": 50
+      },
+      {
+        "name": "idx_user_email_key",
+        "line": 53
+      },
+      {
+        "name": "encode_value",
+        "line": 57
+      },
+      {
+        "name": "decode_value",
+        "line": 61
+      }
+    ]
+  },
+  {
+    "path": "app/main.py",
+    "bytes": 11618,
+    "sha256": "b0e547cc6a554d5f7524a37ca02006e4a1c2cad5533012ad14d0fc8d28402bc4",
+    "symbols": [
+      {
+        "name": "create_app",
+        "line": 16
+      },
+      {
+        "name": "inject_global_data",
+        "line": 32
+      },
+      {
+        "name": "dashboard",
+        "line": 43
+      },
+      {
+        "name": "users_page",
+        "line": 50
+      },
+      {
+        "name": "products_page",
+        "line": 55
+      },
+      {
+        "name": "orders_page",
+        "line": 68
+      },
+      {
+        "name": "order_detail_page",
+        "line": 99
+      },
+      {
+        "name": "kv_explorer_page",
+        "line": 120
+      },
+      {
+        "name": "reports_page",
+        "line": 125
+      },
+      {
+        "name": "api_create_user",
+        "line": 134
+      },
+      {
+        "name": "api_update_user",
+        "line": 144
+      },
+      {
+        "name": "api_delete_user",
+        "line": 153
+      },
+      {
+        "name": "api_create_product",
+        "line": 163
+      },
+      {
+        "name": "api_update_product",
+        "line": 173
+      },
+      {
+        "name": "api_delete_product",
+        "line": 182
+      },
+      {
+        "name": "api_create_order",
+        "line": 192
+      },
+      {
+        "name": "api_pay_order",
+        "line": 211
+      },
+      {
+        "name": "api_update_order_status",
+        "line": 224
+      },
+      {
+        "name": "api_acid_test",
+        "line": 237
+      },
+      {
+        "name": "api_concurrent_test",
+        "line": 245
+      },
+      {
+        "name": "api_seed",
+        "line": 256
+      },
+      {
+        "name": "api_backup",
+        "line": 264
+      },
+      {
+        "name": "api_restore",
+        "line": 273
+      }
+    ]
+  },
+  {
+    "path": "app/models/__init__.py",
+    "bytes": 205,
+    "sha256": "737732046cf6bfd4c3275c04700197a058638dd2155f16e9a3a2149ad5acfd25",
+    "symbols": []
+  },
+  {
+    "path": "app/models/order.py",
+    "bytes": 6178,
+    "sha256": "a65d6ffd0cd5f14c5d1a2264ff2e2f34945f9859442a5ef26cf6090501889c86",
+    "symbols": [
+      {
+        "name": "OrderStatus",
+        "line": 4
+      },
+      {
+        "name": "OrderItem",
+        "line": 38
+      },
+      {
+        "name": "OrderStatusHistory",
+        "line": 65
+      },
+      {
+        "name": "Order",
+        "line": 112
+      },
+      {
+        "name": "can_transition",
+        "line": 33
+      },
+      {
+        "name": "__init__",
+        "line": 39
+      },
+      {
+        "name": "to_dict",
+        "line": 46
+      },
+      {
+        "name": "from_dict",
+        "line": 56
+      },
+      {
+        "name": "__init__",
+        "line": 66
+      },
+      {
+        "name": "to_dict",
+        "line": 86
+      },
+      {
+        "name": "from_dict",
+        "line": 99
+      },
+      {
+        "name": "__init__",
+        "line": 113
+      },
+      {
+        "name": "validate",
+        "line": 133
+      },
+      {
+        "name": "to_dict",
+        "line": 146
+      },
+      {
+        "name": "from_dict",
+        "line": 159
+      }
+    ]
+  },
+  {
+    "path": "app/models/product.py",
+    "bytes": 2227,
+    "sha256": "89e6faac62d1a70bdb5f5607b2a244867828c39e25dbd3b56b8d6342039e07df",
+    "symbols": [
+      {
+        "name": "Product",
+        "line": 4
+      },
+      {
+        "name": "__init__",
+        "line": 7
+      },
+      {
+        "name": "validate",
+        "line": 30
+      },
+      {
+        "name": "to_dict",
+        "line": 41
+      },
+      {
+        "name": "from_dict",
+        "line": 54
+      }
+    ]
+  },
+  {
+    "path": "app/models/transaction.py",
+    "bytes": 2412,
+    "sha256": "c94c04d4a17da6451ef8e74381b4aa6a275faaa98b23537bc415ed278276b882",
+    "symbols": [
+      {
+        "name": "PaymentTransaction",
+        "line": 4
+      },
+      {
+        "name": "__init__",
+        "line": 8
+      },
+      {
+        "name": "validate",
+        "line": 30
+      },
+      {
+        "name": "to_dict",
+        "line": 38
+      },
+      {
+        "name": "from_dict",
+        "line": 52
+      }
+    ]
+  },
+  {
+    "path": "app/models/user.py",
+    "bytes": 2448,
+    "sha256": "02d48546c9f05fd694a4b4966ed80649cedf31cdba0d0c7f0c90b305b7c2b80a",
+    "symbols": [
+      {
+        "name": "User",
+        "line": 5
+      },
+      {
+        "name": "__init__",
+        "line": 9
+      },
+      {
+        "name": "validate",
+        "line": 31
+      },
+      {
+        "name": "to_dict",
+        "line": 42
+      },
+      {
+        "name": "from_dict",
+        "line": 56
+      }
+    ]
+  },
+  {
+    "path": "app/services/__init__.py",
+    "bytes": 322,
+    "sha256": "b99e2ef6f764f9548c8d570a32e03028f46486e8a3ecce6bf8fff847cb6ab9ea",
+    "symbols": []
+  },
+  {
+    "path": "app/services/analytics_service.py",
+    "bytes": 11307,
+    "sha256": "8f1302757849dc4f44cb3730bad744ff946883cc25dccf0ad43152de2a6edce3",
+    "symbols": [
+      {
+        "name": "AnalyticsService",
+        "line": 10
+      },
+      {
+        "name": "get_dashboard_summary",
+        "line": 17
+      },
+      {
+        "name": "filter_orders",
+        "line": 67
+      },
+      {
+        "name": "simulate_acid_transaction_test",
+        "line": 112
+      },
+      {
+        "name": "simulate_concurrent_stress_test",
+        "line": 164
+      },
+      {
+        "name": "_worker",
+        "line": 206
+      }
+    ]
+  },
+  {
+    "path": "app/services/backup_service.py",
+    "bytes": 1957,
+    "sha256": "c1047c94ea64f2a772425192eba2d77d1246f16972d1cb1e42b5463e21ef6488",
+    "symbols": [
+      {
+        "name": "BackupService",
+        "line": 7
+      },
+      {
+        "name": "export_backup",
+        "line": 11
+      },
+      {
+        "name": "restore_backup",
+        "line": 43
+      }
+    ]
+  },
+  {
+    "path": "app/services/order_service.py",
+    "bytes": 16293,
+    "sha256": "cc9aabd261decccb79ebf073c877f344bbfd0d524d588cccb4c9bcca8f79a7de",
+    "symbols": [
+      {
+        "name": "OrderService",
+        "line": 13
+      },
+      {
+        "name": "_generate_order_id",
+        "line": 25
+      },
+      {
+        "name": "_generate_txn_id",
+        "line": 31
+      },
+      {
+        "name": "create_order",
+        "line": 37
+      },
+      {
+        "name": "get_order_by_id",
+        "line": 150
+      },
+      {
+        "name": "get_all_orders",
+        "line": 183
+      },
+      {
+        "name": "get_orders_by_user",
+        "line": 197
+      },
+      {
+        "name": "get_orders_by_status",
+        "line": 212
+      },
+      {
+        "name": "get_order_history",
+        "line": 227
+      },
+      {
+        "name": "process_payment",
+        "line": 250
+      },
+      {
+        "name": "update_order_status",
+        "line": 321
+      },
+      {
+        "name": "get_order_transactions",
+        "line": 377
+      },
+      {
+        "name": "get_all_transactions",
+        "line": 382
+      },
+      {
+        "name": "_txn",
+        "line": 53
+      },
+      {
+        "name": "_txn",
+        "line": 256
+      },
+      {
+        "name": "_txn",
+        "line": 328
+      }
+    ]
+  },
+  {
+    "path": "app/services/product_service.py",
+    "bytes": 4298,
+    "sha256": "c55c0fcccadf3add593994f2ee39ed32a25f0017a763678a86fd25591c1fe262",
+    "symbols": [
+      {
+        "name": "ProductService",
+        "line": 10
+      },
+      {
+        "name": "create_product",
+        "line": 16
+      },
+      {
+        "name": "get_product_by_id",
+        "line": 31
+      },
+      {
+        "name": "get_all_products",
+        "line": 41
+      },
+      {
+        "name": "get_products_by_category",
+        "line": 54
+      },
+      {
+        "name": "update_product",
+        "line": 59
+      },
+      {
+        "name": "delete_product",
+        "line": 91
+      },
+      {
+        "name": "get_raw_key_values",
+        "line": 105
+      },
+      {
+        "name": "_txn",
+        "line": 21
+      },
+      {
+        "name": "_txn",
+        "line": 63
+      },
+      {
+        "name": "_txn",
+        "line": 95
+      }
+    ]
+  },
+  {
+    "path": "app/services/seed_service.py",
+    "bytes": 6279,
+    "sha256": "5c47bafed4b63ee54b32ff79ae40fad70d483fc72fdcd5ba7d52c0a2b2493792",
+    "symbols": [
+      {
+        "name": "SeedService",
+        "line": 5
+      },
+      {
+        "name": "populate_seed_data",
+        "line": 11
+      }
+    ]
+  },
+  {
+    "path": "app/services/user_service.py",
+    "bytes": 4198,
+    "sha256": "92e752296222177f61db3b728a8333ff779207eb30ec0d541425d4a0ce738a1b",
+    "symbols": [
+      {
+        "name": "UserService",
+        "line": 9
+      },
+      {
+        "name": "create_user",
+        "line": 15
+      },
+      {
+        "name": "get_user_by_id",
+        "line": 37
+      },
+      {
+        "name": "get_user_by_email",
+        "line": 47
+      },
+      {
+        "name": "get_all_users",
+        "line": 55
+      },
+      {
+        "name": "update_user",
+        "line": 68
+      },
+      {
+        "name": "delete_user",
+        "line": 111
+      },
+      {
+        "name": "_txn",
+        "line": 20
+      },
+      {
+        "name": "_txn",
+        "line": 72
+      },
+      {
+        "name": "_txn",
+        "line": 115
+      }
+    ]
+  },
+  {
+    "path": "app/static/css/custom.css",
+    "bytes": 7980,
+    "sha256": "213833383d20659479e473b9ede9185172fe8bf643eaadc3ab4f9e219d266ebc"
+  },
+  {
+    "path": "app/static/js/app.js",
+    "bytes": 2056,
+    "sha256": "13c2cb03c053555a99f044512b930c351609d1bd58ab07ada83db943185840ef"
+  },
+  {
+    "path": "app/templates/base.html",
+    "bytes": 6836,
+    "sha256": "6e3f3979ceb866b66226d0943c45a2f3b80a4768a18d573e0bb4560ac0f193a9"
+  },
+  {
+    "path": "app/templates/dashboard.html",
+    "bytes": 15976,
+    "sha256": "1960b14069b9b9c570681a2a338fc76ab4b3fcba43042c1c8345b228eb00217d"
+  },
+  {
+    "path": "app/templates/kv_explorer.html",
+    "bytes": 4401,
+    "sha256": "ef04a5c19a6a4604e90e42c92ea94208c8dfbdbb30fd6269c81a60a3d6466643"
+  },
+  {
+    "path": "app/templates/order_detail.html",
+    "bytes": 20454,
+    "sha256": "83c2eac392a6b43747dfeaedd0f8a3f9a1ed46477a29669b37b785c6814016de"
+  },
+  {
+    "path": "app/templates/orders.html",
+    "bytes": 16393,
+    "sha256": "39d9a8726fb06e5a6ff5db998f83b71d647878b118dc25ec156dc9effe82d2fd"
+  },
+  {
+    "path": "app/templates/products.html",
+    "bytes": 14457,
+    "sha256": "e3df21b0c7c79018b4d340729394f34554617f2d93cd84e3c3496aa75241a789"
+  },
+  {
+    "path": "app/templates/reports.html",
+    "bytes": 15687,
+    "sha256": "b03bf9d3879de476cb4933ed9a8210233b0606c31413ea9f7b598cc0bc47517f"
+  },
+  {
+    "path": "app/templates/users.html",
+    "bytes": 16549,
+    "sha256": "ae658579d6a14f39d10ab41647c3543b89911bccc423ac4e48b5fbd89bf8ebe4"
+  },
+  {
+    "path": "data/foundationdb_storage.json",
+    "bytes": 10513,
+    "sha256": "cf1d3c7dea5a60e3eba54f3d708765977a5e3de2478fb4c67b89220aa34537e0"
+  },
+  {
+    "path": "init_data.py",
+    "bytes": 6091,
+    "sha256": "a4c76c809b2c3f99951a16e145e8084a056ecabb886b5bed4e53e1748b540687",
+    "symbols": []
+  },
+  {
+    "path": "query_data.py",
+    "bytes": 2426,
+    "sha256": "8dd48bde8d3eb887cef160d7438efd55a46223663af8296f978d826eba5f9bda",
+    "symbols": [
+      {
+        "name": "query_sample_data",
+        "line": 21
+      },
+      {
+        "name": "_run",
+        "line": 57
+      }
+    ]
+  },
+  {
+    "path": "requirements.txt",
+    "bytes": 70,
+    "sha256": "fafac0cd163cac79c3679e3a088dcd9f13e046c69aae4eec495f149ddb7c38d4"
+  },
+  {
+    "path": "run.py",
+    "bytes": 1047,
+    "sha256": "2872b7cd893514b30b2e1e3022436dbf4a7cd71cb3b086d60b0901fb8c1914df",
+    "symbols": []
+  },
+  {
+    "path": "start.bat",
+    "bytes": 1086,
+    "sha256": "d903cf799628b26f2f5d1e89a8852fc97bea151696eba877905fa1dc01576078"
+  }
+]

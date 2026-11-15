@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FDB Commerce Operations{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Modern Custom CSS -->
+    <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/custom-refinement.css') }}" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Main Enterprise Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top">
+        <div class="container-fluid px-4 py-1">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+                <div class="navbar-brand-logo text-white">
+                    <i class="fa-solid fa-cube fs-5"></i>
+                </div>
+                <div class="d-flex flex-column">
+                    <span class="fw-bold tracking-tight text-white fs-5 lh-1">FDB <span class="text-indigo-400" style="color: #818cf8;">Commerce</span></span>
+                    <span style="font-size: 0.68rem; color: #94a3b8; letter-spacing: 0.04em;">DISTRIBUTED OPERATIONS PLATFORM</span>
+                </div>
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Mở hoặc đóng menu điều hướng">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-1">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {% if active_page == 'dashboard' %}active{% endif %}" href="/">
+                            <i class="fa-solid fa-chart-pie me-1 text-primary-soft"></i> Tổng quan
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {% if active_page == 'orders' %}active{% endif %}" href="/orders">
+                            <i class="fa-solid fa-bag-shopping me-1 text-primary-soft"></i> Đơn hàng
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {% if active_page == 'products' %}active{% endif %}" href="/products">
+                            <i class="fa-solid fa-cubes-stacked me-1 text-primary-soft"></i> Sản phẩm & Kho
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {% if active_page == 'users' %}active{% endif %}" href="/users">
+                            <i class="fa-solid fa-user-group me-1 text-primary-soft"></i> Khách hàng
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {% if active_page == 'kv_explorer' %}active{% endif %}" href="/kv-explorer">
+                            <i class="fa-solid fa-terminal me-1 text-warning"></i> KV Explorer
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {% if active_page == 'reports' %}active{% endif %}" href="/reports">
+                            <i class="fa-solid fa-chart-line me-1 text-primary-soft"></i> Báo cáo & Kiểm thử
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {% if active_page == 'queries' %}active{% endif %}" href="/queries">
+                            <i class="fa-solid fa-code-merge me-1 text-primary-soft"></i> Truy vấn B
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-none d-md-flex align-items-center gap-2 bg-dark bg-opacity-50 px-3 py-1 rounded-pill border border-white border-opacity-10 text-white small" style="font-size: 0.8rem;">
+                        <span class="spinner-grow spinner-grow-sm text-success" style="width: 7px; height: 7px;" role="status"></span>
+                        <span class="text-white-50">Storage:</span>
+                        <span class="fw-semibold text-white">{{ db_info.mode }}</span>
+                    </div>
+
+                    <button class="btn btn-sm btn-outline-light px-3 py-1 rounded-pill" onclick="seedSampleData()" title="Khôi phục lại dữ liệu mẫu gốc">
+                        <i class="fa-solid fa-rotate me-1"></i> Nạp lại dữ liệu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sub-header Breadcrumb / System Diagnostic Banner -->
+    <div class="sub-header py-2 px-4">
+        <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap gap-2 text-muted" style="font-size: 0.82rem;">
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-dark text-info border border-info border-opacity-25"><i class="fa-solid fa-network-wired text-info me-1"></i> {{ db_info.mode }}</span>
+                <span class="text-secondary d-none d-sm-inline">API version: <strong class="text-light">{{ db_info.api_version }}</strong></span>
+                <span class="text-secondary d-none d-md-inline">• Cách ly: <strong class="text-light">{{ "FoundationDB Strict Serializable" if db_info.mode == "REAL_FDB" else "FDB Local Engine (ACID Emulator)" }}</strong></span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-secondary">Tổng khóa KV: 
+                    <strong class="text-info font-monospace">
+                        {% if db_info.total_keys is not none %}
+                            {{ db_info.total_keys }} keys
+                        {% else %}
+                            Chưa thống kê
+                        {% endif %}
+                    </strong>
+                </span>
+                <span>Trạng thái: <span class="badge bg-success text-success rounded-pill px-2 py-1"><i class="fa-solid fa-circle text-success me-1" style="font-size: 0.5rem;"></i> Active</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="container-fluid px-4 py-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Clean Modern Footer -->
+    <footer class="border-top py-3 text-muted small mt-5">
+        <div class="container-fluid px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span>© 2026 <strong class="text-light">FDB Commerce Operations Platform</strong>. High-Throughput Key-Value Engine.</span>
+            <span class="text-info opacity-75 font-monospace" style="font-size: 0.75rem;">
+                {{ "FoundationDB Strict Serializable Multi-Key ACID Core" if db_info.mode == "REAL_FDB" else "FDB Local Engine — Giả lập Single-Process ACID Demo" }}
+            </span>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

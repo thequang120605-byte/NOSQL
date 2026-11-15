@@ -1,0 +1,728 @@
+{% extends "base.html" %}
+
+{% block title %}Chi Tiết Đơn Hàng {{ order.order_id }} - FDB Commerce<!-- Modal: Cyber Electronic Invoice -->
+<div class="modal fade" id="invoiceModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-bottom border-secondary border-opacity-30">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="p-2 rounded-3 bg-primary bg-opacity-20 text-info border border-primary border-opacity-30">
+                        <i class="fa-solid fa-file-invoice-dollar fs-5"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold text-white mb-0">Hóa Đơn Điện Tử (Cyber Electronic Invoice)</h5>
+                        <span class="text-muted small">Chứng thực giao dịch phân tán trên FoundationDB</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" id="invoicePrintArea">
+                <div class="p-4 rounded-4 border border-info border-opacity-25" style="background: rgba(8, 14, 30, 0.95);">
+                    <div class="d-flex justify-content-between align-items-start border-bottom border-secondary border-opacity-25 pb-3 mb-3">
+                        <div>
+                            <h4 class="fw-bold text-white mb-1">FDB <span class="text-info">Commerce</span></h4>
+                            <span class="text-muted small">DISTRIBUTED OPERATIONS PLATFORM</span>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-dark text-info border border-info border-opacity-30 font-monospace mb-1">HÓA ĐƠN: {{ order.order_id }}</span>
+                            <div class="text-muted small font-monospace">Ngày: {{ order.created_at[:10] }}</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3 small">
+                        <div class="col-6">
+                            <span class="text-muted">Khách hàng:</span>
+                            <div class="fw-bold text-white">{{ user.name if user else order.user_id }}</div>
+                            <div class="text-muted">{{ user.email if user else '' }}</div>
+                        </div>
+                        <div class="col-6 text-end">
+                            <span class="text-muted">Địa chỉ nhận hàng:</span>
+                            <div class="fw-semibold text-light">{{ order.shipping_address }}</div>
+                            <div class="text-success mt-1"><i class="fa-solid fa-shield-halved me-1"></i> ACID Verified</div>
+                        </div>
+                    </div>
+
+                    <table class="table table-sm table-custom mb-3 small">
+                        <thead>
+                            <tr>
+                                <th>Mặt Hàng</th>
+                                <th class="text-center">Số Lượng</th>
+                                <th class="text-end">Đơn Giá</th>
+                                <th class="text-end">Thành Tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for it in order.items %}
+                            <tr>
+                                <td>{{ it.product_name }}</td>
+                                <td class="text-center">{{ it.quantity }}</td>
+                                <td class="text-end">{{ "{:,.0f}".format(it.unit_price) }} đ</td>
+                                <td class="text-end fw-bold text-info">{{ "{:,.0f}".format(it.subtotal) }} đ</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold">Tổng Thanh Toán:</td>
+                                <td class="text-end fw-bold text-info fs-6">{{ "{:,.0f}".format(order.total_amount) }} đ</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div class="p-2 rounded-3 border border-secondary border-opacity-25 text-center text-muted" style="font-size: 0.74rem;">
+                        Khóa Tuple FoundationDB: <code>('order', '{{ order.order_id }}')</code> • Trạng thái hiện tại: <strong>{{ order.status }}</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary px-4" onclick="window.print()">
+                    <i class="fa-solid fa-print me-1"></i> In Hóa Đơn
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Detail Header & Status Bar -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <a href="/orders" class="btn btn-sm btn-outline-light border px-2 py-1 rounded-2" title="Quay lại danh sách đơn">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <h4 class="fw-bold mb-0 text-white font-monospace">Đơn Hàng: <span class="text-info">{{ order.order_id }}</span></h4>
+            <span class="status-pill status-{{ order.status }} ms-1">
+                <span class="status-dot"></span> {{ order.status }}
+            </span>
+        </div>
+        <p class="text-muted small mb-0 mt-1">
+            <i class="fa-regular fa-clock me-1 text-info"></i> Khởi tạo: <span class="text-light font-monospace">{{ order.created_at[:19].replace('T', ' ') }}</span> 
+            <span class="mx-1">•</span> 
+            Cập nhật gần nhất: <span class="text-light font-monospace">{{ order.updated_at[:19].replace('T', ' ') }}</span>
+        </p>
+    </div>
+
+    <!-- Quick State Transition Action Station -->
+    <div class="d-flex gap-2 flex-wrap">
+        {% if order.status in ['CREATED', 'PENDING'] %}
+            <button class="btn btn-success px-3 py-2 rounded-3 shadow d-flex align-items-center gap-2" onclick="openPaymentModal(true)">
+                <i class="fa-solid fa-credit-card"></i>
+                <span>Thanh Toán Thành Công</span>
+            </button>
+            <button class="btn btn-outline-danger px-3 py-2 rounded-3 d-flex align-items-center gap-1" onclick="openPaymentModal(false)">
+                <i class="fa-solid fa-ban"></i>
+                <span>Báo Thanh Toán Thất Bại</span>
+            </button>
+        {% elif order.status == 'FAILED' %}
+            <button class="btn btn-primary px-3 py-2 rounded-3" onclick="transitionStatus('PENDING', 'Admin', 'Thử thanh toán lại')">
+                <i class="fa-solid fa-arrow-rotate-right me-1"></i> Thử Thanh Toán Lại (PENDING)
+            </button>
+        {% elif order.status in ['PAID', 'SUCCESS'] %}
+            <button class="btn btn-warning px-3 py-2 rounded-3 text-dark fw-bold" onclick="transitionStatus('PROCESSING', 'Kho Tổng', 'Bắt đầu đóng gói kiện hàng')">
+                <i class="fa-solid fa-box-archive me-1"></i> Chuẩn Bị Hàng (PROCESSING)
+            </button>
+        {% elif order.status == 'PROCESSING' %}
+            <button class="btn btn-primary px-3 py-2 rounded-3" onclick="transitionStatus('SHIPPING', 'Bưu tá GHN', 'Bàn giao bưu tá bưu cục')">
+                <i class="fa-solid fa-truck-fast me-1"></i> Bàn Giao Vận Chuyển (SHIPPING)
+            </button>
+        {% elif order.status == 'SHIPPING' %}
+            <button class="btn btn-info text-white px-3 py-2 rounded-3" onclick="transitionStatus('DELIVERED', 'Shipper', 'Khách hàng nhận hàng và ký nhận')">
+                <i class="fa-solid fa-house-chimney-check me-1"></i> Xác Nhận Đã Giao (DELIVERED)
+            </button>
+        {% elif order.status == 'DELIVERED' %}
+            <button class="btn btn-success px-3 py-2 rounded-3 shadow" onclick="transitionStatus('COMPLETED', 'Admin', 'Hoàn tất đơn hàng')">
+                <i class="fa-solid fa-circle-check me-1"></i> Hoàn Tất Đơn Hàng (COMPLETED)
+            </button>
+        {% elif order.status == 'COMPLETED' %}
+            <span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-30 px-3 py-2 rounded-pill fs-6">
+                <i class="fa-solid fa-check-double me-1"></i> Đơn Hàng Hoàn Tất Tuyệt Đối
+            </span>
+        {% endif %}
+
+        {% if order.status in ['PENDING', 'FAILED'] %}
+            <button class="btn btn-outline-danger px-3 py-2 rounded-3" onclick="cancelOrderWithRollback()">
+                <i class="fa-solid fa-xmark me-1"></i> Hủy Đơn & Hoàn Tồn Kho
+            </button>
+        {% elif order.status == 'CANCELLED' %}
+            <span class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-30 px-3 py-2 rounded-pill fs-6">
+                <i class="fa-solid fa-ban me-1"></i> Đơn Hàng Đã Hủy & Hoàn Kho
+            </span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Horizontal Visual Stepper Bar -->
+<div class="cyber-stepper-box mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <span class="small fw-bold text-white text-uppercase tracking-wider">
+            <i class="fa-solid fa-route text-info me-1"></i> Tiến Trình Xử Lý Trạng Thái Giao Dịch
+        </span>
+        <button class="btn btn-sm btn-outline-info rounded-pill px-3 shadow-sm" onclick="openInvoiceModal()">
+            <i class="fa-solid fa-receipt me-1"></i> Xem Hóa Đơn Điện Tử
+        </button>
+    </div>
+
+    {% set steps = [
+        ('PENDING', 'Khởi Tạo', 'fa-cart-shopping'),
+        ('SUCCESS', 'Thanh Toán', 'fa-credit-card'),
+        ('PROCESSING', 'Đóng Gói', 'fa-box-archive'),
+        ('SHIPPING', 'Vận Chuyển', 'fa-truck-fast'),
+        ('DELIVERED', 'Đã Giao', 'fa-house-chimney-check'),
+        ('COMPLETED', 'Hoàn Tất', 'fa-check-double')
+    ] %}
+
+    {% set status_order = ['PENDING', 'SUCCESS', 'PROCESSING', 'SHIPPING', 'DELIVERED', 'COMPLETED'] %}
+    {% set current_idx = -1 %}
+    {% if order.status in status_order %}
+        {% set current_idx = status_order.index(order.status) %}
+    {% elif order.status in ['PAID'] %}
+        {% set current_idx = 1 %}
+    {% elif order.status in ['CREATED'] %}
+        {% set current_idx = 0 %}
+    {% endif %}
+
+    <div class="cyber-step-track">
+        {% set progress_width = 0 %}
+        {% if current_idx >= 0 %}
+            {% set progress_width = (current_idx / (steps|length - 1)) * 100 %}
+        {% endif %}
+        <div class="cyber-step-progress-bar" style="width: calc({{ progress_width }}% - 40px);"></div>
+
+        {% for st, label, icon in steps %}
+            {% set step_idx = loop.index0 %}
+            <div class="cyber-step-node {% if order.status in ['CANCELLED', 'FAILED'] and loop.first %}active{% elif current_idx > step_idx %}completed{% elif current_idx == step_idx %}active{% endif %}">
+                <div class="cyber-step-circle">
+                    {% if current_idx > step_idx %}
+                        <i class="fa-solid fa-check"></i>
+                    {% else %}
+                        <i class="fa-solid {{ icon }}"></i>
+                    {% endif %}
+                </div>
+                <span class="cyber-step-label">{{ label }}</span>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if order.status == 'CANCELLED' %}
+    <div class="mt-3 p-2 rounded-3 border border-danger border-opacity-30 bg-danger bg-opacity-10 text-danger small text-center">
+        <i class="fa-solid fa-ban me-1"></i> Đơn hàng đã bị hủy bỏ: Hệ thống đã hoàn trả tồn kho tự động theo chuẩn ACID.
+    </div>
+    {% elif order.status == 'FAILED' %}
+    <div class="mt-3 p-2 rounded-3 border border-warning border-opacity-30 bg-warning bg-opacity-10 text-warning small text-center">
+        <i class="fa-solid fa-triangle-exclamation me-1"></i> Thanh toán thất bại: Vui lòng chuyển trạng thái về PENDING để thử lại giao dịch.
+    </div>
+    {% endif %}
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Customer, Items, Transactions & Developer Terminal Inspector -->
+    <div class="col-lg-7">
+        <!-- Customer Info Card -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0 text-white d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-user-circle text-info"></i>
+                    <span>Thông Tin Khách Hàng & Vận Chuyển</span>
+                </h6>
+                <span class="badge bg-dark text-info border border-info border-opacity-30 font-monospace">Subspace: ('user', '{{ order.user_id }}')</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <span class="text-muted small">Khách Hàng Đặt Đơn:</span>
+                        <div class="fw-bold text-white mt-1 d-flex align-items-center gap-2">
+                            <span>{{ user.name if user else order.user_id }}</span>
+                            <span class="badge bg-dark text-info border border-info border-opacity-30 font-monospace">{{ order.user_id }}</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small">Email Liên Hệ:</span>
+                        <div class="fw-semibold text-light mt-1">{{ user.email if user else '---' }}</div>
+                    </div>
+                    <div class="col-12">
+                        <span class="text-muted small">Địa Chỉ Giao Nhận Hàng:</span>
+                        <div class="fw-semibold text-light mt-1 d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-location-dot text-danger"></i>
+                            <span>{{ order.shipping_address }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Items Card -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0 text-white d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-box-open text-info"></i>
+                    <span>Chi Tiết Mặt Hàng Đặt Mua</span>
+                </h6>
+                <span class="badge bg-dark text-info border border-info border-opacity-30 font-monospace">
+                    Range: ('order_item', '{{ order.order_id }}')
+                </span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Sản Phẩm</th>
+                                <th class="text-center">Số Lượng</th>
+                                <th class="text-end">Đơn Giá</th>
+                                <th class="text-end pe-4">Thành Tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="{{ url_for('static', filename='img/' + item.product_id + '.jpg') }}" 
+                                             alt="{{ item.product_name }}" 
+                                             class="item-thumb-micro rounded-3"
+                                             onerror="this.src='{{ url_for('static', filename='img/hero_cyber_headphone.jpg') }}'">
+                                        <div>
+                                            <div class="fw-bold text-white">{{ item.product_name }}</div>
+                                            <span class="badge bg-dark text-info border border-info border-opacity-30 font-monospace" style="font-size: 0.72rem;">{{ item.product_id }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center fw-semibold text-light font-monospace">{{ item.quantity }}</td>
+                                <td class="text-end text-light font-monospace">{{ "{:,.0f}".format(item.unit_price) }} đ</td>
+                                <td class="text-end pe-4 fw-bold text-info font-monospace">{{ "{:,.0f}".format(item.subtotal) }} đ</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: rgba(15, 23, 42, 0.9);">
+                                <td colspan="3" class="text-end fw-bold ps-4 text-muted">Tổng Giá Trị Đơn Hàng:</td>
+                                <td class="text-end pe-4 fw-bold text-info fs-5 font-monospace">{{ "{:,.0f}".format(order.total_amount) }} đ</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions Subspace Card -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0 text-white d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-credit-card text-info"></i>
+                    <span>Lịch Sử Đối Soát Giao Dịch Thanh Toán</span>
+                </h6>
+                <span class="badge bg-dark text-info border border-info border-opacity-30 font-monospace">Prefix: ('transaction',)</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle small">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Mã Giao Dịch</th>
+                                <th>Cổng / Phương Thức</th>
+                                <th>Số Tiền</th>
+                                <th>Trạng Thái</th>
+                                <th>Thời Gian</th>
+                                <th class="pe-4">Ghi Chú</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in transactions %}
+                            <tr>
+                                <td class="ps-4 font-monospace fw-semibold text-info">{{ t.txn_id }}</td>
+                                <td><span class="badge bg-dark text-light border border-secondary border-opacity-30">{{ t.payment_method }}</span></td>
+                                <td class="fw-bold text-white font-monospace">{{ "{:,.0f}".format(t.amount) }} đ</td>
+                                <td>
+                                    <span class="status-pill status-{{ t.status }}">
+                                        <span class="status-dot"></span> {{ t.status }}
+                                    </span>
+                                </td>
+                                <td class="text-muted font-monospace">{{ t.created_at[:19].replace('T', ' ') }}</td>
+                                <td class="pe-4 text-muted">{{ t.note }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <i class="fa-regular fa-credit-card text-secondary opacity-50 mb-1 d-block fs-4"></i>
+                                    Chưa ghi nhận giao dịch thanh toán nào cho đơn hàng này
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- High-Tech Developer Terminal KV Inspector -->
+        <div class="card mb-4 border-0">
+            <div class="terminal-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="terminal-dot dot-red"></span>
+                        <span class="terminal-dot dot-yellow"></span>
+                        <span class="terminal-dot dot-green"></span>
+                    </div>
+                    <span class="text-info font-monospace">fdbcli://subspace/order/{{ order.order_id }}</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-dark text-success border border-success border-opacity-30">STRICT_SERIALIZABLE</span>
+                        <button class="btn btn-sm btn-outline-info py-0 px-2 font-monospace" style="font-size: 0.72rem;" onclick="copyFdbCli()">
+                            <i class="fa-solid fa-copy me-1"></i> Sao chép lệnh fdbcli
+                        </button>
+                    </div>
+                </div>
+<span class="text-secondary">// 1. Khóa chính Đơn hàng (Primary Key Tuple):</span>
+<span class="text-info">Key:</span> ('order', '{{ order.order_id }}')
+<span class="text-info">Value (JSON):</span> {{ order_json }}
+
+<span class="text-secondary">// 2. Chỉ mục phụ theo Người dùng (Secondary Index):</span>
+<span class="text-info">Key:</span> ('idx_user_orders', '{{ order.user_id }}', '{{ order.order_id }}') => <span class="text-success">Value: b''</span>
+
+<span class="text-secondary">// 3. Chỉ mục phụ theo Trạng thái & Ngày tạo (Time-series Index):</span>
+<span class="text-info">Key:</span> ('idx_status_orders', '{{ order.status }}', '{{ order.created_at }}', '{{ order.order_id }}') => <span class="text-success">Value: b''</span>
+
+<span class="text-secondary">// 4. Chi tiết các mặt hàng (Order Items Tuple Prefix):</span>
+<span class="text-info">Range Scan:</span> ('order_item', '{{ order.order_id }}', ...) [{{ order.items|length }} mặt hàng]
+
+<span class="text-secondary">// 5. Dòng thời gian lịch sử trạng thái (Audit Trail Prefix):</span>
+<span class="text-info">Range Scan:</span> ('order_history', '{{ order.order_id }}', ...) [{{ history|length }} bản ghi lịch sử]
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: High-Tech Cyber Timeline Stepper -->
+    <div class="col-lg-5">
+        <div class="card sticky-top" style="top: 85px;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-timeline text-info"></i>
+                    <h6 class="fw-bold mb-0 text-white">Dòng Thời Gian Lịch Sử Trạng Thái</h6>
+                </div>
+                <span class="badge bg-primary bg-opacity-20 text-info border border-primary border-opacity-30 font-monospace">
+                    {{ history|length }} sự kiện
+                </span>
+            </div>
+            <div class="card-body p-4">
+                <ul class="timeline-modern mb-0">
+                    {% for h in history %}
+                    <li class="timeline-step {% if h.new_status in ['COMPLETED', 'SUCCESS', 'DELIVERED'] %}success{% elif h.new_status in ['CANCELLED', 'FAILED'] %}danger{% endif %}">
+                        <div class="timeline-icon">
+                            {% if h.new_status in ['COMPLETED', 'SUCCESS'] %}
+                                <i class="fa-solid fa-check"></i>
+                            {% elif h.new_status in ['CANCELLED', 'FAILED'] %}
+                                <i class="fa-solid fa-xmark"></i>
+                            {% elif h.new_status == 'SHIPPING' %}
+                                <i class="fa-solid fa-truck"></i>
+                            {% elif h.new_status == 'PROCESSING' %}
+                                <i class="fa-solid fa-box"></i>
+                            {% else %}
+                                <i class="fa-solid fa-circle-dot"></i>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-1">
+                            <span class="fw-bold text-white">{{ h.action }}</span>
+                            <span class="status-pill status-{{ h.new_status }}">{{ h.new_status }}</span>
+                        </div>
+                        <div class="text-muted small mb-2 font-monospace" style="font-size: 0.78rem;">
+                            <i class="fa-regular fa-clock me-1 text-info"></i> {{ h.timestamp[:19].replace('T', ' ') }}
+                        </div>
+                        <div class="small mb-2">
+                            <span class="badge bg-dark text-light border border-secondary border-opacity-30">
+                                <i class="fa-solid fa-user-gear me-1 text-info"></i> Thao tác: {{ h.operator }}
+                            </span>
+                        </div>
+                        {% if h.note %}
+                        <div class="p-2 rounded-3 small text-light border-start border-3 border-info" style="background: rgba(14, 165, 233, 0.08);">
+                            {{ h.note }}
+                        </div>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Ghi Nhận Thanh Toán -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="p-2 rounded-3 bg-primary bg-opacity-20 text-info border border-primary border-opacity-30">
+                        <i class="fa-solid fa-credit-card"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold text-white mb-0" id="paymentModalTitle">Ghi Nhận Giao Dịch Thanh Toán</h5>
+                        <span class="text-muted small">Cập nhật đồng thời trạng thái đơn hàng và sinh biên lai TXN</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="paymentForm" onsubmit="submitPayment(event)">
+                <div class="modal-body p-4">
+                    <input type="hidden" id="payment_is_success" value="true">
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-light">Số Tiền Thanh Toán</label>
+                        <input type="text" class="form-control fw-bold text-info fs-5 font-monospace" value="{{ '{:,.0f}'.format(order.total_amount) }} đ" disabled style="background: rgba(15, 23, 42, 0.9);">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-light">Phương Thức Thanh Toán <span class="text-danger">*</span></label>
+                        <select class="form-select" id="payment_method">
+                            <option value="MOMO" selected>Ví Điện Tử MoMo (Momo Gateway)</option>
+                            <option value="VNPAY">Cổng VNPAY / QR Pay Quốc Gia</option>
+                            <option value="BANK_TRANSFER">Chuyển Khoản Ngân Hàng Trực Tiếp</option>
+                            <option value="COD">Thanh Toán Khi Giao Hàng (COD)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-light">Ghi Chú Giao Dịch</label>
+                        <textarea class="form-control" id="payment_note" rows="2" placeholder="Ghi chú xác thực giao dịch..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-success px-4" id="btnSubmitPayment">
+                        Xác Nhận Thanh Toán
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Modal: Cyber Electronic Invoice -->
+<div class="modal fade" id="invoiceModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-bottom border-secondary border-opacity-30">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="p-2 rounded-3 bg-primary bg-opacity-20 text-info border border-primary border-opacity-30">
+                        <i class="fa-solid fa-file-invoice-dollar fs-5"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold text-white mb-0">Hóa Đơn Điện Tử (Cyber Electronic Invoice)</h5>
+                        <span class="text-muted small">Chứng thực giao dịch phân tán trên FoundationDB</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" id="invoicePrintArea">
+                <div class="p-4 rounded-4 border border-info border-opacity-25" style="background: rgba(8, 14, 30, 0.95);">
+                    <div class="d-flex justify-content-between align-items-start border-bottom border-secondary border-opacity-25 pb-3 mb-3">
+                        <div>
+                            <h4 class="fw-bold text-white mb-1">FDB <span class="text-info">Commerce</span></h4>
+                            <span class="text-muted small">DISTRIBUTED OPERATIONS PLATFORM</span>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-dark text-info border border-info border-opacity-30 font-monospace mb-1">HÓA ĐƠN: {{ order.order_id }}</span>
+                            <div class="text-muted small font-monospace">Ngày: {{ order.created_at[:10] }}</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3 small">
+                        <div class="col-6">
+                            <span class="text-muted">Khách hàng:</span>
+                            <div class="fw-bold text-white">{{ user.name if user else order.user_id }}</div>
+                            <div class="text-muted">{{ user.email if user else '' }}</div>
+                        </div>
+                        <div class="col-6 text-end">
+                            <span class="text-muted">Địa chỉ nhận hàng:</span>
+                            <div class="fw-semibold text-light">{{ order.shipping_address }}</div>
+                            <div class="text-success mt-1"><i class="fa-solid fa-shield-halved me-1"></i> ACID Verified</div>
+                        </div>
+                    </div>
+
+                    <table class="table table-sm table-custom mb-3 small">
+                        <thead>
+                            <tr>
+                                <th>Mặt Hàng</th>
+                                <th class="text-center">Số Lượng</th>
+                                <th class="text-end">Đơn Giá</th>
+                                <th class="text-end">Thành Tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for it in order.items %}
+                            <tr>
+                                <td>{{ it.product_name }}</td>
+                                <td class="text-center">{{ it.quantity }}</td>
+                                <td class="text-end">{{ "{:,.0f}".format(it.unit_price) }} đ</td>
+                                <td class="text-end fw-bold text-info">{{ "{:,.0f}".format(it.subtotal) }} đ</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold">Tổng Thanh Toán:</td>
+                                <td class="text-end fw-bold text-info fs-6">{{ "{:,.0f}".format(order.total_amount) }} đ</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div class="p-2 rounded-3 border border-secondary border-opacity-25 text-center text-muted" style="font-size: 0.74rem;">
+                        Khóa Tuple FoundationDB: <code>('order', '{{ order.order_id }}')</code> • Trạng thái hiện tại: <strong>{{ order.status }}</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary px-4" onclick="window.print()">
+                    <i class="fa-solid fa-print me-1"></i> In Hóa Đơn
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const currentOrderId = {{ order.order_id | tojson }};
+let paymentRequestId = null;
+
+function openInvoiceModal() {
+    new bootstrap.Modal(document.getElementById('invoiceModal')).show();
+}
+
+function copyFdbCli() {
+    const cmd = `fdbcli --exec "get \\x01order\\x00\\x01${currentOrderId}\\x00"`;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(cmd).then(() => {
+            showSuccessAlert('Đã sao chép lệnh truy vấn fdbcli vào bộ nhớ tạm!');
+        });
+    } else {
+        showSuccessAlert('Lệnh fdbcli: ' + cmd);
+    }
+}
+
+function openPaymentModal(isSuccess) {
+    paymentRequestId = crypto.randomUUID();
+    document.getElementById('payment_is_success').value = isSuccess ? "true" : "false";
+    const title = document.getElementById('paymentModalTitle');
+    const btn = document.getElementById('btnSubmitPayment');
+    const note = document.getElementById('payment_note');
+
+    if (isSuccess) {
+        title.innerHTML = '<i class="fa-solid fa-credit-card text-success me-2"></i> Xác Nhận Thanh Toán Thành Công';
+        btn.className = 'btn btn-success px-4';
+        btn.innerText = 'Xác Nhận Thành Công';
+        note.value = 'Khách hàng hoàn tất thanh toán trực tuyến';
+    } else {
+        title.innerHTML = '<i class="fa-solid fa-ban text-danger me-2"></i> Báo Thanh Toán Thất Bại';
+        btn.className = 'btn btn-danger px-4';
+        btn.innerText = 'Ghi Nhận Thất Bại';
+        note.value = 'Ngân hàng từ chối giao dịch: Số dư không đủ hoặc thẻ bị khóa';
+    }
+
+    new bootstrap.Modal(document.getElementById('paymentModal')).show();
+}
+
+async function submitPayment(e) {
+    e.preventDefault();
+    const form = e.target;
+    if (form.getAttribute('aria-busy') === 'true') return;
+
+    const btn = document.getElementById('btnSubmitPayment');
+    const isSuccess = document.getElementById('payment_is_success').value === "true";
+    const method = document.getElementById('payment_method').value;
+    const note = document.getElementById('payment_note').value;
+
+    let committed = false;
+    form.setAttribute('aria-busy', 'true');
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    const oldText = btn.innerText;
+    btn.innerText = 'Đang xử lý transaction…';
+
+    try {
+        const resp = await fetch(`/api/orders/${currentOrderId}/pay`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                request_id: paymentRequestId,
+                payment_method: method,
+                is_success: isSuccess,
+                note: note
+            })
+        });
+        const res = await resp.json();
+        if (resp.ok && res.status === 'success') {
+            committed = true;
+            showSuccessAlert(
+                isSuccess ? 'Thanh toán thành công! Đã commit trạng thái SUCCESS và cập nhật rollup.' : 'Đã ghi nhận giao dịch thất bại!',
+                () => location.reload()
+            );
+        } else {
+            showErrorAlert(res.message || 'Lỗi xử lý thanh toán');
+        }
+    } catch (err) {
+        showErrorAlert('Chưa xác nhận được kết quả transaction. Hãy kiểm tra trạng thái trước khi gửi lại.');
+    } finally {
+        if (!committed) {
+            form.removeAttribute('aria-busy');
+            btn.removeAttribute('aria-busy');
+            btn.disabled = false;
+            btn.innerText = oldText;
+        }
+    }
+}
+
+async function transitionStatus(newStatus, operator, defaultNote) {
+    const { value: note } = await Swal.fire({
+        title: `Chuyển trạng thái: ${newStatus}?`,
+        input: 'text',
+        inputLabel: 'Ghi chú cập nhật nghiệp vụ:',
+        inputValue: defaultNote,
+        showCancelButton: true,
+        confirmButtonColor: '#2563eb',
+        confirmButtonText: 'Xác nhận chuyển',
+        cancelButtonText: 'Hủy'
+    });
+
+    if (note !== undefined) {
+        try {
+            const resp = await fetch(`/api/orders/${currentOrderId}/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    new_status: newStatus,
+                    operator: operator,
+                    note: note
+                })
+            });
+            const res = await resp.json();
+            if (res.status === 'success') {
+                showSuccessAlert(`Đơn hàng đã cập nhật sang ${newStatus}!`, () => location.reload());
+            } else {
+                showErrorAlert(res.message);
+            }
+        } catch (err) {
+            showErrorAlert(err.message);
+        }
+    }
+}
+
+async function cancelOrderWithRollback() {
+    const confirm = await Swal.fire({
+        title: 'Hủy đơn hàng này?',
+        text: 'Hệ thống sẽ thực thi giao dịch ACID hoàn trả lại toàn bộ số lượng tồn kho của các mặt hàng vào kho sản phẩm!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Đồng ý hủy đơn & Hoàn kho',
+        cancelButtonText: 'Đóng'
+    });
+
+    if (confirm.isConfirmed) {
+        transitionStatus('CANCELLED', 'Khách hàng', 'Khách hàng chủ động hủy đơn - Đã hoàn trả tồn kho');
+    }
+}
+</script>
+{% endblock %}

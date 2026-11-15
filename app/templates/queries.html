@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% block title %}Truy Vấn Nâng Cao & Range Scan - FDB Commerce{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h4 class="fw-bold mb-0 text-white">Truy Vấn Nâng Cao & Range Scan</h4>
+            <span class="badge bg-primary bg-opacity-20 text-info border border-info border-opacity-30 rounded-pill px-3 py-1">
+                <i class="fa-solid fa-microchip me-1"></i> Module Thành Viên B
+            </span>
+        </div>
+        <p class="text-muted small mb-0">Tối ưu truy vấn phạm vi Key-Tuple trên FoundationDB với Composite Index và Cursor Pagination</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="/kv-explorer" class="btn btn-sm btn-outline-info rounded-pill px-3">
+            <i class="fa-solid fa-terminal me-1"></i> Mở KV Explorer
+        </a>
+    </div>
+</div>
+
+<!-- Architecture & Range Scan Architecture Banner -->
+<div class="card mb-4" style="background: linear-gradient(135deg, rgba(14, 23, 42, 0.9) 0%, rgba(15, 30, 65, 0.6) 100%); border-left: 4px solid #00f2fe;">
+    <div class="card-body p-3 p-md-4">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-8">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-40">
+                        <i class="fa-solid fa-bolt me-1"></i> Index Subspace Range
+                    </span>
+                    <span class="text-white small fw-semibold">Nguyên lý truy vấn không quét toàn bộ (Zero Full-Scan):</span>
+                </div>
+                <p class="text-muted small mb-2" style="line-height: 1.6;">
+                    Khi lọc theo trạng thái và khoảng ngày, hệ thống truy vấn trực tiếp trên Subspace 
+                    <code class="text-info font-monospace">('idx_status_orders', status, timestamp, order_id)</code> bằng hàm 
+                    <code class="text-warning font-monospace">db.get_range(begin, end)</code>. 
+                    Nhờ tính chất sắp xếp byte tự nhiên của FoundationDB Tuple Layer, độ phức tạp đạt mức 
+                    <strong class="text-white">O(log N + K)</strong> với $K$ là số bản ghi khớp điều kiện.
+                </p>
+                <div class="d-flex flex-wrap gap-2 text-secondary font-monospace" style="font-size: 0.76rem;">
+                    <span><i class="fa-solid fa-check text-success me-1"></i>Strict Serializable Read</span>
+                    <span>•</span>
+                    <span><i class="fa-solid fa-check text-success me-1"></i>Keyset Cursor Pagination</span>
+                    <span>•</span>
+                    <span><i class="fa-solid fa-check text-success me-1"></i>Deterministic Byte Ordering</span>
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <div class="p-3 rounded-3 border border-info border-opacity-20 bg-dark bg-opacity-60 text-start">
+                    <div class="small text-muted mb-1">Index Key Pattern:</div>
+                    <div class="font-monospace text-info small mb-2" style="font-size: 0.78rem; word-break: break-all;">
+                        ('idx_status_orders', &lt;STATUS&gt;, &lt;ISO_TIME&gt;, &lt;ORD_ID&gt;)
+                    </div>
+                    <div class="small text-muted mb-1">Pagination Mode:</div>
+                    <div class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-30 rounded-pill">
+                        Cursor Next Token
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Query Form Console -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h6 class="fw-bold mb-0 text-white">
+            <i class="fa-solid fa-sliders me-2 text-info"></i> Thiết Lập Bộ Lọc Phạm Vi (Range Parameters)
+        </h6>
+        <span class="text-muted small font-monospace">API: /api/queries/orders | /api/queries/transactions/summary</span>
+    </div>
+    <div class="card-body p-4">
+        <form id="query" class="row g-3 align-items-end">
+            <div class="col-md-3 col-sm-6">
+                <label class="form-label text-muted small fw-semibold">
+                    <i class="fa-solid fa-traffic-light me-1 text-info"></i> Trạng Thái Đơn Hàng
+                </label>
+                <select name="status" class="form-select form-select-cyber">
+                    {% for st in all_statuses %}
+                    <option value="{{ st }}" {% if st == 'SUCCESS' %}selected{% endif %}>{{ st }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <label class="form-label text-muted small fw-semibold">
+                    <i class="fa-regular fa-calendar-days me-1 text-info"></i> Từ Ngày (Bắt đầu)
+                </label>
+                <input name="from_date" type="date" value="2026-10-20" class="form-control form-control-cyber">
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <label class="form-label text-muted small fw-semibold">
+                    <i class="fa-regular fa-calendar-check me-1 text-info"></i> Đến Ngày (Tính trọn ngày)
+                </label>
+                <input name="to_date" type="date" value="2026-10-23" class="form-control form-control-cyber">
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <label class="form-label text-muted small fw-semibold">
+                    <i class="fa-solid fa-list-ol me-1 text-info"></i> Giới Hạn Bản Ghi (Limit)
+                </label>
+                <input name="limit" type="number" value="50" min="1" max="200" class="form-control form-control-cyber font-monospace">
+            </div>
+
+            <div class="col-12 mt-4 pt-2 border-top border-white border-opacity-10 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="submit" class="btn btn-primary px-4 rounded-pill shadow-sm">
+                        <i class="fa-solid fa-magnifying-glass me-2"></i> Chạy Truy Vấn Lọc Đơn
+                    </button>
+                    <button type="button" id="summary" class="btn btn-outline-info px-3 rounded-pill">
+                        <i class="fa-solid fa-chart-pie me-2"></i> Tổng Hợp Giao Dịch
+                    </button>
+                    <button type="button" id="next" class="btn btn-outline-secondary px-3 rounded-pill" disabled>
+                        <i class="fa-solid fa-forward-step me-2"></i> Trang Kế Tiếp
+                    </button>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="copyConsoleOutput()">
+                        <i class="fa-regular fa-copy me-1"></i> Sao chép JSON
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="clearConsoleOutput()">
+                        <i class="fa-solid fa-eraser me-1"></i> Xóa log
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Output Terminal -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <div class="terminal-dots">
+                <span class="terminal-dot dot-red"></span>
+                <span class="terminal-dot dot-yellow"></span>
+                <span class="terminal-dot dot-green"></span>
+            </div>
+            <span class="fw-bold text-white small ms-2 font-monospace">
+                <i class="fa-solid fa-terminal me-1 text-info"></i> FDB QUERY EXECUTION OUTPUT
+            </span>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <span id="execLatency" class="badge bg-dark text-info border border-info border-opacity-25 font-monospace" style="display: none;">
+                Latency: <span id="execLatencyVal">0</span> ms
+            </span>
+            <span id="execStatus" class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-30 rounded-pill" style="display: none;">
+                HTTP 200 OK
+            </span>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <pre id="result" class="p-4 mb-0 font-monospace text-info bg-dark bg-opacity-75" style="min-height: 280px; max-height: 550px; overflow-y: auto; font-size: 0.86rem; border-radius: 0 0 16px 16px; border: none; white-space: pre-wrap; word-break: break-all;" aria-live="polite">// Nhấn "Chạy Truy Vấn Lọc Đơn" hoặc "Tổng Hợp Giao Dịch" để thực thi lệnh trên FoundationDB...</pre>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let cursor = null, savedQuery = '';
+const form = document.getElementById('query');
+const output = document.getElementById('result');
+const next = document.getElementById('next');
+const latencyBadge = document.getElementById('execLatency');
+const latencyVal = document.getElementById('execLatencyVal');
+const statusBadge = document.getElementById('execStatus');
+
+async function run(summary = false, more = false) {
+    if (form.getAttribute('aria-busy') === 'true') return;
+    const allButtons = form.querySelectorAll('button');
+    allButtons.forEach(b => b.disabled = true);
+    form.setAttribute('aria-busy', 'true');
+
+    const params = more ? new URLSearchParams(savedQuery) : new URLSearchParams(new FormData(form));
+    if (!more) savedQuery = params.toString();
+    if (more && cursor) params.set('cursor', cursor);
+
+    output.innerHTML = '<span class="text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang quét Tuple Range trong FoundationDB...</span>';
+    latencyBadge.style.display = 'none';
+    statusBadge.style.display = 'none';
+
+    const t0 = performance.now();
+    try {
+        const url = (summary ? '/api/queries/transactions/summary?' : '/api/queries/orders?') + params;
+        const response = await fetch(url);
+        const data = await response.json();
+        const elapsed = Math.round(performance.now() - t0);
+
+        latencyVal.textContent = elapsed;
+        latencyBadge.style.display = 'inline-flex';
+        statusBadge.style.display = 'inline-flex';
+        statusBadge.className = response.ok 
+            ? 'badge bg-success text-success rounded-pill'
+            : 'badge bg-danger text-danger rounded-pill';
+        statusBadge.textContent = response.ok ? `HTTP ${response.status} OK` : `HTTP ${response.status} ERROR`;
+
+        output.textContent = JSON.stringify(data, null, 2);
+        cursor = response.ok && !summary ? data.next_cursor : null;
+    } catch (e) {
+        output.textContent = `Lỗi thực thi truy vấn: ${e.message}`;
+        statusBadge.style.display = 'inline-flex';
+        statusBadge.className = 'badge bg-danger text-danger rounded-pill';
+        statusBadge.textContent = 'NETWORK ERROR';
+    } finally {
+        form.removeAttribute('aria-busy');
+        allButtons.forEach(b => {
+            if (b !== next) b.disabled = false;
+        });
+        next.disabled = !cursor;
+    }
+}
+
+form.onsubmit = e => { e.preventDefault(); run(false, false); };
+document.getElementById('summary').onclick = () => run(true, false);
+next.onclick = () => run(false, true);
+
+function copyConsoleOutput() {
+    const text = output.textContent;
+    if (!text || text.startsWith('//')) {
+        showWarningAlert('Không có nội dung kết quả để sao chép!');
+        return;
+    }
+    navigator.clipboard.writeText(text).then(() => {
+        showSuccessToast('Đã sao chép toàn bộ JSON vào Clipboard!');
+    }).catch(err => {
+        showErrorToast('Lỗi sao chép: ' + err);
+    });
+}
+
+function clearConsoleOutput() {
+    output.textContent = '// Console đã được làm sạch. Sẵn sàng cho truy vấn mới...';
+    latencyBadge.style.display = 'none';
+    statusBadge.style.display = 'none';
+    cursor = null;
+    next.disabled = true;
+}
+</script>
+{% endblock %}
