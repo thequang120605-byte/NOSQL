@@ -472,10 +472,17 @@ async function submitCreateOrder(e) {
         return;
     }
 
+    // Stable Idempotency Key across retries of the same pending order attempt
+    let idempotencyKey = sessionStorage.getItem('pending_order_idempotency_key');
+    if (!idempotencyKey) {
+        idempotencyKey = customOrderId || ('ORD-REQ-' + (window.crypto && crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).substring(2, 9))));
+        sessionStorage.setItem('pending_order_idempotency_key', idempotencyKey);
+    }
+
     const payload = {
         user_id: userId,
         shipping_address: shippingAddress,
-        custom_order_id: customOrderId,
+        custom_order_id: customOrderId || idempotencyKey,
         items: items
     };
 
@@ -486,12 +493,15 @@ async function submitCreateOrder(e) {
     form.setAttribute('aria-busy', 'true');
     button.disabled = true;
     button.setAttribute('aria-busy', 'true');
-    if (feedback) feedback.textContent = 'Đang gửi transaction tạo đơn vào FoundationDB, vui lòng chờ…';
+    if (feedback) feedback.textContent = 'Đang gửi transaction tạo đơn vào FoundationDB (Strict Serializable ACID), vui lòng chờ…';
 
     try {
         const response = await fetch('/api/orders', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Idempotency-Key': idempotencyKey
+            },
             body: JSON.stringify(payload)
         });
         const result = await response.json();
@@ -502,11 +512,12 @@ async function submitCreateOrder(e) {
             return;
         }
         committed = true;
+        sessionStorage.removeItem('pending_order_idempotency_key');
         if (feedback) feedback.textContent = 'Đã commit transaction thành công. Đang mở chi tiết…';
         window.location.assign(`/orders/${encodeURIComponent(result.order.order_id)}`);
     } catch (err) {
-        if (feedback) feedback.textContent = 'Chưa xác nhận được kết quả. Hãy kiểm tra danh sách đơn trước khi gửi lại.';
-        showErrorAlert('Chưa xác nhận được kết quả. Hãy kiểm tra danh sách đơn trước khi gửi lại.');
+        if (feedback) feedback.textContent = 'Chưa xác nhận được kết quả (Idempotency Key đã được lưu an toàn). Hãy kiểm tra danh sách đơn trước khi gửi lại.';
+        showErrorAlert('Chưa xác nhận được kết quả giao dịch. Mã Idempotency-Key được bảo lưu để tránh trừ tiền lặp.');
     } finally {
         if (!committed) {
             form.removeAttribute('aria-busy');
@@ -515,5 +526,37 @@ async function submitCreateOrder(e) {
         }
     }
 }
+
+// Auto open modal when buy_product_id is present
+document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const buyProdId = params.get('buy_product_id');
+    if (buyProdId) {
+        const modalEl = document.getElementById('createOrderModal');
+        if (modalEl) {
+            const prodSelect = modalEl.querySelector('.item-product-select');
+            if (prodSelect) {
+                prodSelect.value = buyProdId;
+                calculateOrderTotal();
+            }
+            const userSelect = document.getElementById('order_user_select');
+            if (userSelect && !userSelect.value) {
+                const firstValid = Array.from(userSelect.options).find(o => o.value && !o.disabled && o.getAttribute('data-status') !== 'locked');
+                if (firstValid) {
+                    userSelect.value = firstValid.value;
+                    onUserSelectChange();
+                }
+            }
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+    }
+    const modalEl = document.getElementById('createOrderModal');
+    if (modalEl) {
+        modalEl.addEventListener('hidden.bs.modal', () => {
+            sessionStorage.removeItem('pending_order_idempotency_key');
+        });
+    }
+});
 </script>
 {% endblock %}

@@ -48,6 +48,28 @@ if __name__ == '__main__':
                 from app.database.schema import APP_PREFIXES, unpack_key
                 for k,_ in tr.get_range(*get_prefix_range(('idx_status_orders',))):
                     if unpack_key(k)[3] == order_id: tr.clear(k)
+            tx_raw = tr.get(transaction_key('REQ-'+receipt_id))
+            if tx_raw:
+                try:
+                    import json
+                    from decimal import Decimal
+                    tx_data = json.loads(tx_raw.decode('utf-8'))
+                    day = tx_data.get('timestamp', '')[:10]
+                    st = tx_data.get('status', 'SUCCESS')
+                    amt = int(Decimal(str(int(float(tx_data.get('amount', 0))))))
+                    from app.database.schema import agg_transactions_day_key, decode_value, encode_value
+                    agg_k = agg_transactions_day_key(day, st)
+                    agg_raw = tr.get(agg_k)
+                    if agg_raw:
+                        agg_summary = decode_value(agg_raw)
+                        agg_summary['count'] = max(0, agg_summary.get('count', 1) - 1)
+                        agg_summary['amount_vnd'] = max(0, agg_summary.get('amount_vnd', amt) - amt)
+                        if agg_summary['count'] == 0 and agg_summary['amount_vnd'] == 0:
+                            tr.clear(agg_k)
+                        else:
+                            tr.set(agg_k, encode_value(agg_summary))
+                except Exception:
+                    pass
             for k in (user_key(uid),idx_user_email_key(email),product_key(pid),transaction_key('REQ-'+receipt_id)):
                 tr.clear(k)
         cleanup(get_db())

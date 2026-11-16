@@ -1,6 +1,34 @@
 import math
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 from typing import Optional, Dict, Any, List
+
+def parse_stock(value: Any) -> int:
+    """Strictly validates inventory stock: non-negative integers only.
+    Rejects decimals like 2.9, booleans, or negative values.
+    """
+    if isinstance(value, bool):
+        raise ValueError("Tồn kho phải là số nguyên không âm")
+    try:
+        raw_str = str(value).strip()
+        number = Decimal(raw_str)
+    except (InvalidOperation, TypeError, ValueError):
+        raise ValueError("Tồn kho không hợp lệ")
+    if not number.is_finite() or number < 0 or number != number.to_integral_value():
+        raise ValueError("Tồn kho phải là số nguyên không âm")
+    return int(number)
+
+def parse_price(value: Any) -> float:
+    """Strictly validates product price: non-negative finite number."""
+    if isinstance(value, bool):
+        raise ValueError("Giá sản phẩm không hợp lệ")
+    try:
+        val = float(value)
+    except (TypeError, ValueError):
+        raise ValueError("Giá sản phẩm không hợp lệ")
+    if not math.isfinite(val) or val < 0:
+        raise ValueError("Giá sản phẩm không được là số âm")
+    return val
 
 class Product:
     VALID_STATUSES = {'available', 'out_of_stock', 'discontinued'}
@@ -26,15 +54,15 @@ class Product:
         self.product_id = product_id.strip()
         self.name = name.strip()
         self.category = category.strip()
-        self.price = float(price)
-        self.stock = int(stock)
+        self.price = parse_price(price)
+        self.stock = parse_stock(stock)
         self.description = description.strip()
         if status:
             self.status = status.lower()
         else:
             self.status = "available" if self.stock > 0 else "out_of_stock"
         self.updated_at = updated_at or datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.brand = (brand or "CyberTech Prime").strip()
+        self.brand = (brand or "TechNova Official").strip()
         self.specs = specs or {}
         self.rating = float(rating) if rating is not None else 4.9
         self.reviews_count = int(reviews_count) if reviews_count is not None else 120

@@ -62,15 +62,20 @@ def create_app():
     @app.route('/products')
     def products_page():
         category = request.args.get('category')
+        search = request.args.get('q')
         all_products = ProductService.get_all_products()
         categories = sorted(list(set(p.category for p in all_products if p.category)))
 
-        if category:
-            products = ProductService.get_products_by_category(category)
-        else:
-            products = all_products
+        products = ProductService.get_all_products(category=category, search=search)
 
-        return render_template('products.html', active_page='products', products=products, categories=categories, selected_cat=category)
+        return render_template(
+            'products.html',
+            active_page='products',
+            products=products,
+            categories=categories,
+            selected_cat=category,
+            search_query=search
+        )
 
     @app.route('/orders')
     def orders_page():
@@ -126,8 +131,16 @@ def create_app():
 
     @app.route('/kv-explorer')
     def kv_explorer_page():
-        kv_items = ProductService.get_raw_key_values(limit=150)
-        return render_template('kv_explorer.html', active_page='kv_explorer', kv_items=kv_items)
+        prefix = request.args.get('prefix')
+        kv_items = ProductService.get_raw_key_values(limit=150, prefix_filter=prefix)
+        from app.database.schema import APP_PREFIXES
+        return render_template(
+            'kv_explorer.html',
+            active_page='kv_explorer',
+            kv_items=kv_items,
+            selected_prefix=prefix,
+            app_prefixes=APP_PREFIXES
+        )
 
     @app.route('/reports')
     def reports_page():

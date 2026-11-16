@@ -49,8 +49,17 @@
             <h6 class="fw-bold mb-0 text-white">Các Cặp Key-Value Đang Lưu Trữ ({{ kv_items|length }} keys)</h6>
         </div>
         <span class="badge bg-dark text-info border border-info border-opacity-30 font-monospace">
-            Range: [b'', b'\xff...']
+            {% if selected_prefix %}Prefix: ('{{ selected_prefix }}', ...){% else %}Range: [b'', b'\xff...']{% endif %}
         </span>
+    </div>
+    <div class="px-3 py-2 bg-dark bg-opacity-40 border-bottom border-secondary border-opacity-25 d-flex align-items-center gap-1 flex-wrap">
+        <span class="small text-muted me-2"><i class="fa-solid fa-filter me-1"></i>Lọc Prefix Tuple:</span>
+        <a href="/kv-explorer" class="btn btn-sm {% if not selected_prefix %}btn-primary text-white{% else %}btn-outline-secondary text-light{% endif %} rounded-pill px-2 py-0" style="font-size: 0.75rem;">Tất cả</a>
+        {% if app_prefixes %}
+        {% for pfx in app_prefixes %}
+        <a href="/kv-explorer?prefix={{ pfx }}" class="btn btn-sm {% if selected_prefix == pfx %}btn-primary text-white{% else %}btn-outline-secondary text-light{% endif %} rounded-pill px-2 py-0" style="font-size: 0.75rem;">{{ pfx }}</a>
+        {% endfor %}
+        {% endif %}
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">

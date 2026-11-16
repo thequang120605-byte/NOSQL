@@ -1,0 +1,545 @@
+/**
+ * TechNova Modern E-Commerce Storefront CSS
+ * Palette: Crisp Off-White (#F8FAFC), Dark Emerald (#134E4A / #1B4332), Dark Footer (#0F2922)
+ * Typography: Plus Jakarta Sans / Inter
+ */
+
+:root {
+    --tn-bg: #F8FAFC;
+    --tn-surface: #FFFFFF;
+    --tn-primary: #134E4A;
+    --tn-primary-hover: #0F3D2E;
+    --tn-primary-light: #E6F4F1;
+    --tn-primary-soft: rgba(19, 78, 74, 0.08);
+    --tn-footer-bg: #0F2922;
+    --tn-text-main: #0F172A;
+    --tn-text-body: #334155;
+    --tn-text-muted: #64748B;
+    --tn-border: #E2E8F0;
+    --tn-border-light: #F1F5F9;
+    --tn-badge-red: #DC2626;
+    --tn-star: #F59E0B;
+}
+
+/* Base Body when storefront is active */
+body.technova-theme {
+    background-color: var(--tn-bg) !important;
+    background-image: none !important;
+    color: var(--tn-text-body) !important;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* Header & Navigation */
+.technova-navbar {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid var(--tn-border) !important;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04) !important;
+    padding: 0.75rem 1.5rem;
+}
+
+.technova-brand {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--tn-primary) !important;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.technova-brand-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    background: var(--tn-primary-light);
+    color: var(--tn-primary);
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    letter-spacing: 0.05em;
+}
+
+.technova-nav-link {
+    color: #475569 !important;
+    font-weight: 600;
+    font-size: 0.92rem;
+    padding: 0.5rem 0.85rem !important;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.technova-nav-link:hover, .technova-nav-link.active {
+    color: var(--tn-primary) !important;
+    background: var(--tn-primary-soft);
+}
+
+.technova-search-box {
+    background: #F1F5F9;
+    border: 1px solid #CBD5E1;
+    border-radius: 999px;
+    padding: 0.45rem 1rem;
+    font-size: 0.88rem;
+    color: var(--tn-text-main);
+    transition: all 0.2s ease;
+}
+
+.technova-search-box:focus {
+    background: #FFFFFF;
+    border-color: var(--tn-primary);
+    box-shadow: 0 0 0 3px rgba(19, 78, 74, 0.15);
+    outline: none;
+}
+
+.btn-technova-primary {
+    background-color: var(--tn-primary) !important;
+    border-color: var(--tn-primary) !important;
+    color: #FFFFFF !important;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 0.6rem 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.btn-technova-primary:hover {
+    background-color: var(--tn-primary-hover) !important;
+    border-color: var(--tn-primary-hover) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(19, 78, 74, 0.25);
+}
+
+.btn-technova-outline {
+    background: transparent !important;
+    border: 1.5px solid var(--tn-primary) !important;
+    color: var(--tn-primary) !important;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 0.6rem 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.btn-technova-outline:hover {
+    background: var(--tn-primary-light) !important;
+    color: var(--tn-primary-hover) !important;
+}
+
+/* Diagnostic Sub-header */
+.technova-sub-header {
+    background: #F1F5F4;
+    border-bottom: 1px solid var(--tn-border);
+    font-size: 0.82rem;
+    color: var(--tn-text-muted);
+}
+
+/* Hero Section */
+.technova-hero-card {
+    background: linear-gradient(135deg, #F1F5F4 0%, #E6EFEA 100%);
+    border: 1px solid rgba(19, 78, 74, 0.12);
+    border-radius: 28px;
+    padding: 3rem 2.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.technova-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #FFFFFF;
+    color: var(--tn-primary);
+    font-weight: 700;
+    font-size: 0.78rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(19, 78, 74, 0.08);
+    margin-bottom: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.technova-hero-title {
+    font-size: 2.75rem;
+    font-weight: 800;
+    color: var(--tn-text-main);
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+}
+
+.technova-hero-desc {
+    font-size: 1.05rem;
+    color: var(--tn-text-muted);
+    line-height: 1.6;
+    max-width: 560px;
+    margin-bottom: 1.75rem;
+}
+
+.technova-hero-img-container {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 16px 36px rgba(19, 78, 74, 0.15);
+    background: #FFFFFF;
+}
+
+.technova-hero-img {
+    width: 100%;
+    height: 380px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+}
+
+.technova-hero-img:hover {
+    transform: scale(1.02);
+}
+
+/* Categories Grid */
+.technova-category-card {
+    background: #FFFFFF;
+    border: 1px solid var(--tn-border);
+    border-radius: 16px;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    text-decoration: none;
+    color: var(--tn-text-main);
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.technova-category-card:hover {
+    border-color: var(--tn-primary);
+    background: var(--tn-primary-light);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(19, 78, 74, 0.08);
+}
+
+.technova-category-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: var(--tn-primary-soft);
+    color: var(--tn-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.technova-category-card:hover .technova-category-icon {
+    background: var(--tn-primary);
+    color: #FFFFFF;
+}
+
+.technova-category-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+    color: var(--tn-text-main);
+}
+
+.technova-category-count {
+    font-size: 0.78rem;
+    color: var(--tn-text-muted);
+}
+
+/* Best Sellers Product Cards (4 Column Grid) */
+.technova-product-card {
+    background: #FFFFFF;
+    border: 1px solid var(--tn-border);
+    border-radius: 18px;
+    padding: 1.15rem;
+    position: relative;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.technova-product-card:hover {
+    border-color: rgba(19, 78, 74, 0.35);
+    box-shadow: 0 12px 28px rgba(19, 78, 74, 0.1);
+    transform: translateY(-4px);
+}
+
+.technova-discount-tag {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: var(--tn-badge-red);
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 8px;
+    z-index: 2;
+    letter-spacing: 0.02em;
+}
+
+.technova-wishlist-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 1px solid var(--tn-border);
+    color: #94A3B8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.technova-wishlist-btn:hover {
+    color: var(--tn-badge-red);
+    border-color: var(--tn-badge-red);
+    background: #FEE2E2;
+}
+
+.technova-product-thumb-box {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #F8FAFC;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.85rem;
+    padding: 0.75rem;
+}
+
+.technova-product-thumb {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.technova-product-card:hover .technova-product-thumb {
+    transform: scale(1.06);
+}
+
+.technova-product-brand {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--tn-primary);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.technova-product-title {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--tn-text-main);
+    line-height: 1.35;
+    margin-bottom: 0.5rem;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    min-height: 2.7em;
+}
+
+.technova-product-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+}
+
+.technova-stars {
+    color: var(--tn-star);
+}
+
+.technova-reviews-count {
+    color: var(--tn-text-muted);
+    font-size: 0.75rem;
+}
+
+.technova-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+    margin-top: auto;
+}
+
+.technova-price-current {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--tn-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.technova-price-original {
+    font-size: 0.88rem;
+    color: #94A3B8;
+    text-decoration: line-through;
+    font-variant-numeric: tabular-nums;
+}
+
+.btn-technova-cart {
+    width: 100%;
+    background: var(--tn-primary);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 999px;
+    padding: 0.6rem 1rem;
+    font-weight: 600;
+    font-size: 0.88rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.btn-technova-cart:hover {
+    background: var(--tn-primary-hover);
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(19, 78, 74, 0.25);
+}
+
+/* Secondary Promo Banner */
+.technova-promo-banner {
+    background: var(--tn-primary);
+    border-radius: 24px;
+    padding: 2.5rem;
+    color: #FFFFFF;
+    position: relative;
+    overflow: hidden;
+}
+
+.technova-promo-title {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin-bottom: 0.5rem;
+}
+
+.technova-promo-desc {
+    color: rgba(255, 255, 255, 0.85);
+    max-width: 500px;
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Trust Guarantee Bar */
+.technova-trust-bar {
+    background: #FFFFFF;
+    border: 1px solid var(--tn-border);
+    border-radius: 18px;
+    padding: 1.5rem 1rem;
+}
+
+.technova-trust-item {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.technova-trust-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--tn-primary-light);
+    color: var(--tn-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.technova-trust-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--tn-text-main);
+    margin-bottom: 0.15rem;
+}
+
+.technova-trust-subtitle {
+    font-size: 0.78rem;
+    color: var(--tn-text-muted);
+}
+
+/* Academic & NoSQL Defense Section */
+.technova-ops-card {
+    background: #FFFFFF;
+    border: 1px solid rgba(19, 78, 74, 0.2);
+    border-radius: 20px;
+    padding: 1.75rem;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+}
+
+/* Dark Emerald Footer */
+.technova-footer {
+    background: var(--tn-footer-bg);
+    color: #94A3B8;
+    padding-top: 4rem;
+    padding-bottom: 2rem;
+    margin-top: 4rem;
+}
+
+.technova-footer h5 {
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 1.25rem;
+}
+
+.technova-footer-link {
+    color: #94A3B8;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 0.6rem;
+    font-size: 0.88rem;
+    transition: color 0.2s ease;
+}
+
+.technova-footer-link:hover {
+    color: #34D399;
+}
+
+.technova-footer-input {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #FFFFFF;
+    border-radius: 999px;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.88rem;
+}
+
+.technova-footer-input:focus {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: #34D399;
+    color: #FFFFFF;
+    outline: none;
+}
+
+/* Cart floating badge */
+.cart-counter-badge {
+    position: absolute;
+    top: -5px;
+    right: -7px;
+    background: var(--tn-badge-red);
+    color: #FFFFFF;
+    font-size: 0.65rem;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 2px 6px;
+}

@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}FDB Commerce Operations{% endblock %}</title>
+    <title>{% block title %}TechNova - FoundationDB E-Commerce Platform{% endblock %}</title>
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome 6 Icons -->
@@ -12,34 +16,43 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Modern Custom CSS -->
+    <!-- TechNova & Enterprise Custom CSS -->
     <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/custom-refinement.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/technova-storefront.css') }}" rel="stylesheet">
 </head>
-<body>
+<body class="{% if active_page == 'dashboard' %}technova-theme{% endif %}">
 
-    <!-- Main Enterprise Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top">
-        <div class="container-fluid px-4 py-1">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="/">
-                <div class="navbar-brand-logo text-white">
-                    <i class="fa-solid fa-cube fs-5"></i>
+    <!-- TechNova Unified Header & Navbar -->
+    <nav class="navbar navbar-expand-xl navbar-dark navbar-custom sticky-top">
+        <div class="container-fluid px-3 px-lg-4 py-1">
+            <!-- Brand Logo -->
+            <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="/">
+                <div class="d-flex align-items-center justify-content-center rounded-3 bg-emerald p-2" style="background: #134E4A; width: 38px; height: 38px;">
+                    <i class="fa-solid fa-shapes text-white fs-6"></i>
                 </div>
                 <div class="d-flex flex-column">
-                    <span class="fw-bold tracking-tight text-white fs-5 lh-1">FDB <span class="text-indigo-400" style="color: #818cf8;">Commerce</span></span>
-                    <span style="font-size: 0.68rem; color: #94a3b8; letter-spacing: 0.04em;">DISTRIBUTED OPERATIONS PLATFORM</span>
+                    <span class="fw-bold tracking-tight text-white fs-5 lh-1">TechNova <span class="badge bg-success bg-opacity-25 text-info border border-info border-opacity-30" style="font-size: 0.65rem; vertical-align: middle;">FDB CORE</span></span>
+                    <span style="font-size: 0.65rem; color: #94a3b8; letter-spacing: 0.05em;">DISTRIBUTED E-COMMERCE</span>
                 </div>
             </a>
 
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Mở hoặc đóng menu điều hướng">
+            <!-- Mobile Toggle Button -->
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Mở hoặc đóng menu">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
+            <!-- Navigation Links -->
             <div class="collapse navbar-collapse" id="mainNav">
-                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-1">
+                <ul class="navbar-nav mx-auto mb-2 mb-xl-0 gap-1">
                     <li class="nav-item">
                         <a class="nav-link nav-link-custom {% if active_page == 'dashboard' %}active{% endif %}" href="/">
-                            <i class="fa-solid fa-chart-pie me-1 text-primary-soft"></i> Tổng quan
+                            <i class="fa-solid fa-house me-1 text-primary-soft"></i> Trang chủ
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {% if active_page == 'products' %}active{% endif %}" href="/products">
+                            <i class="fa-solid fa-store me-1 text-primary-soft"></i> Cửa hàng & Kho
                         </a>
                     </li>
                     <li class="nav-item">
@@ -48,40 +61,51 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-custom {% if active_page == 'products' %}active{% endif %}" href="/products">
-                            <i class="fa-solid fa-cubes-stacked me-1 text-primary-soft"></i> Sản phẩm & Kho
-                        </a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link nav-link-custom {% if active_page == 'users' %}active{% endif %}" href="/users">
                             <i class="fa-solid fa-user-group me-1 text-primary-soft"></i> Khách hàng
                         </a>
                     </li>
+
+                    <!-- Separator for NoSQL Ops & Academic Defense -->
+                    <li class="nav-item d-none d-xl-flex align-items-center mx-1">
+                        <span class="text-secondary opacity-25">|</span>
+                    </li>
+
                     <li class="nav-item">
-                        <a class="nav-link nav-link-custom {% if active_page == 'kv_explorer' %}active{% endif %}" href="/kv-explorer">
+                        <a class="nav-link nav-link-custom {% if active_page == 'kv_explorer' %}active{% endif %}" href="/kv-explorer" title="Tra cứu dữ liệu Key-Value Tuple Layer">
                             <i class="fa-solid fa-terminal me-1 text-warning"></i> KV Explorer
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-custom {% if active_page == 'reports' %}active{% endif %}" href="/reports">
-                            <i class="fa-solid fa-chart-line me-1 text-primary-soft"></i> Báo cáo & Kiểm thử
+                        <a class="nav-link nav-link-custom {% if active_page == 'reports' %}active{% endif %}" href="/reports" title="Kiểm thử ACID và Báo cáo">
+                            <i class="fa-solid fa-chart-line me-1 text-info"></i> Báo cáo & ACID
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-custom {% if active_page == 'queries' %}active{% endif %}" href="/queries">
+                        <a class="nav-link nav-link-custom {% if active_page == 'queries' %}active{% endif %}" href="/queries" title="Truy vấn nâng cao Đề tài 19">
                             <i class="fa-solid fa-code-merge me-1 text-primary-soft"></i> Truy vấn B
                         </a>
                     </li>
                 </ul>
 
-                <div class="d-flex align-items-center gap-3">
-                    <div class="d-none d-md-flex align-items-center gap-2 bg-dark bg-opacity-50 px-3 py-1 rounded-pill border border-white border-opacity-10 text-white small" style="font-size: 0.8rem;">
+                <!-- Right Actions: Search + Storage + Seed -->
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <form method="GET" action="/products" class="d-none d-lg-flex align-items-center">
+                        <div class="input-group input-group-sm" style="max-width: 190px;">
+                            <input type="text" name="q" class="form-control form-control-sm bg-dark border-secondary text-white rounded-start-pill" placeholder="Tìm sản phẩm..." style="font-size: 0.8rem;">
+                            <button class="btn btn-sm btn-outline-secondary rounded-end-pill text-light px-2" type="submit">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="d-flex align-items-center gap-2 bg-dark bg-opacity-60 px-3 py-1 rounded-pill border border-secondary border-opacity-30 text-white small" style="font-size: 0.78rem;">
                         <span class="spinner-grow spinner-grow-sm text-success" style="width: 7px; height: 7px;" role="status"></span>
-                        <span class="text-white-50">Storage:</span>
-                        <span class="fw-semibold text-white">{{ db_info.mode }}</span>
+                        <span class="text-secondary">Storage:</span>
+                        <span class="fw-semibold text-info font-monospace">{{ db_info.mode }}</span>
                     </div>
 
-                    <button class="btn btn-sm btn-outline-light px-3 py-1 rounded-pill" onclick="seedSampleData()" title="Khôi phục lại dữ liệu mẫu gốc">
+                    <button class="btn btn-sm btn-outline-light px-3 py-1 rounded-pill" onclick="seedSampleData()" title="Khôi phục lại dữ liệu mẫu gốc theo Tuple Layer">
                         <i class="fa-solid fa-rotate me-1"></i> Nạp lại dữ liệu
                     </button>
                 </div>
@@ -90,10 +114,12 @@
     </nav>
 
     <!-- Sub-header Breadcrumb / System Diagnostic Banner -->
-    <div class="sub-header py-2 px-4">
+    <div class="sub-header py-2 px-3 px-lg-4">
         <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap gap-2 text-muted" style="font-size: 0.82rem;">
             <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-dark text-info border border-info border-opacity-25"><i class="fa-solid fa-network-wired text-info me-1"></i> {{ db_info.mode }}</span>
+                <span class="badge bg-dark text-info border border-info border-opacity-25 font-monospace">
+                    <i class="fa-solid fa-network-wired text-info me-1"></i> {{ db_info.mode }}
+                </span>
                 <span class="text-secondary d-none d-sm-inline">API version: <strong class="text-light">{{ db_info.api_version }}</strong></span>
                 <span class="text-secondary d-none d-md-inline">• Cách ly: <strong class="text-light">{{ "FoundationDB Strict Serializable" if db_info.mode == "REAL_FDB" else "FDB Local Engine (ACID Emulator)" }}</strong></span>
             </div>
@@ -113,17 +139,72 @@
     </div>
 
     <!-- Main Content Area -->
-    <main class="container-fluid px-4 py-4">
+    <main class="container-fluid px-3 px-lg-4 py-4">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Clean Modern Footer -->
-    <footer class="border-top py-3 text-muted small mt-5">
-        <div class="container-fluid px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <span>© 2026 <strong class="text-light">FDB Commerce Operations Platform</strong>. High-Throughput Key-Value Engine.</span>
-            <span class="text-info opacity-75 font-monospace" style="font-size: 0.75rem;">
-                {{ "FoundationDB Strict Serializable Multi-Key ACID Core" if db_info.mode == "REAL_FDB" else "FDB Local Engine — Giả lập Single-Process ACID Demo" }}
-            </span>
+    <!-- TechNova Dark Emerald Footer -->
+    <footer class="technova-footer border-top border-secondary border-opacity-25">
+        <div class="container-fluid px-4 px-lg-5">
+            <div class="row g-4 pb-4">
+                <!-- Col 1: TechNova Info -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="d-flex align-items-center justify-content-center rounded-3 bg-emerald p-2" style="background: #134E4A; width: 34px; height: 34px;">
+                            <i class="fa-solid fa-shapes text-white fs-6"></i>
+                        </div>
+                        <span class="fw-bold fs-5 text-white">TechNova</span>
+                    </div>
+                    <p class="small text-muted mb-3" style="line-height: 1.6;">
+                        Nền tảng thương mại điện tử công nghệ cao thế hệ mới, vận hành trên cơ sở dữ liệu phân tán <strong>Apple FoundationDB Key-Value Store</strong>. Cam kết chuẩn giao dịch <strong>Strict Serializable ACID</strong> tuyệt đối không bán vượt tồn kho (Zero Overselling).
+                    </p>
+                    <div class="d-flex align-items-center gap-2 text-muted small">
+                        <i class="fa-solid fa-shield-check text-success"></i>
+                        <span>Đề Tài 19: Xây Dựng Ứng Dụng E-Commerce Với CSDL NoSQL FoundationDB</span>
+                    </div>
+                </div>
+
+                <!-- Col 2: Categories -->
+                <div class="col-lg-2 col-md-6">
+                    <h5>Danh Mục</h5>
+                    <a href="/products?category=Smartphone" class="technova-footer-link">Smartphone & Thiết bị</a>
+                    <a href="/products?category=Laptop" class="technova-footer-link">Laptop & Máy tính</a>
+                    <a href="/products?category=Âm thanh" class="technova-footer-link">Âm thanh & Tai nghe</a>
+                    <a href="/products?category=Bàn phím & Chuột" class="technova-footer-link">Gaming Gear</a>
+                    <a href="/products?category=Màn hình" class="technova-footer-link">Màn hình & Phụ kiện</a>
+                </div>
+
+                <!-- Col 3: Academic & Operations Links -->
+                <div class="col-lg-3 col-md-6">
+                    <h5>Hệ Thống & Báo Cáo</h5>
+                    <a href="/orders" class="technova-footer-link"><i class="fa-solid fa-bag-shopping me-1 text-info"></i> Quản lý Đơn hàng</a>
+                    <a href="/products" class="technova-footer-link"><i class="fa-solid fa-cubes me-1 text-info"></i> Quản lý Kho sản phẩm</a>
+                    <a href="/kv-explorer" class="technova-footer-link"><i class="fa-solid fa-terminal me-1 text-warning"></i> Key-Value Explorer (Tuple Layer)</a>
+                    <a href="/reports" class="technova-footer-link"><i class="fa-solid fa-chart-line me-1 text-success"></i> Kiểm thử ACID & Concurrency</a>
+                    <a href="/queries" class="technova-footer-link"><i class="fa-solid fa-code-merge me-1 text-primary"></i> Truy vấn phạm vi Tuple (Range Scan)</a>
+                </div>
+
+                <!-- Col 4: Newsletter -->
+                <div class="col-lg-3 col-md-6">
+                    <h5>Đăng Ký Nhận Tin</h5>
+                    <p class="small text-muted mb-3">Nhận thông tin ưu đãi độc quyền giảm đến 20% và cập nhật công nghệ mới nhất.</p>
+                    <form onsubmit="event.preventDefault(); showSuccessAlert('Cảm ơn bạn đã đăng ký nhận tin từ TechNova!');">
+                        <div class="input-group mb-2">
+                            <input type="email" class="form-control technova-footer-input" placeholder="Nhập email của bạn..." required>
+                            <button class="btn btn-technova-primary" type="submit">Gửi</button>
+                        </div>
+                    </form>
+                    <span class="text-secondary small" style="font-size: 0.75rem;">Bảo mật thông tin khách hàng tuyệt đối.</span>
+                </div>
+            </div>
+
+            <!-- Bottom Copyright Bar -->
+            <div class="border-top border-secondary border-opacity-25 pt-3 d-flex justify-content-between align-items-center flex-wrap gap-2 text-muted small">
+                <span>© 2026 <strong>TechNova Platform</strong> • Đề tài NoSQL FoundationDB (Nhóm 19).</span>
+                <span class="font-monospace text-info opacity-75" style="font-size: 0.75rem;">
+                    {{ "Apple FoundationDB Native C-API Cluster" if db_info.mode == "REAL_FDB" else "FDB Local Engine — Giả lập Single-Process ACID Demo" }}
+                </span>
+            </div>
         </div>
     </footer>
 
@@ -133,4 +214,5 @@
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
+</html>
 </html>

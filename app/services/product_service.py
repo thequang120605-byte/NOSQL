@@ -5,7 +5,8 @@ from app.database import (
     product_key, get_prefix_range, unpack_key,
     encode_value, decode_value
 )
-from app.models.product import Product
+from app.database.schema import APP_PREFIXES, pack_key
+from app.models.product import Product, parse_stock, parse_price
 
 class ProductService:
     """Implements Mục 9.2: Thao tác dữ liệu hàng hóa & kho.
@@ -38,22 +39,34 @@ class ProductService:
         return Product.from_dict(data)
 
     @staticmethod
-    def get_all_products() -> List[Product]:
+    def get_all_products(category: Optional[str] = None, search: Optional[str] = None) -> List[Product]:
+        """Fetch all products with optional category and keyword search filtering."""
         db = get_db()
         start, stop = get_prefix_range(('product',))
         items = db.get_range(start, stop)
         products = []
+        c_filter = category.strip().lower() if category else None
+        s_filter = search.strip().lower() if search else None
+
         for k_bytes, raw_val in items:
             tup = unpack_key(k_bytes)
             data = decode_value(raw_val)
             data['product_id'] = tup[1]
-            products.append(Product.from_dict(data))
+            prod = Product.from_dict(data)
+
+            if c_filter and prod.category.strip().lower() != c_filter:
+                continue
+            if s_filter:
+                corpus = f"{prod.name} {prod.brand} {prod.description} {prod.product_id} {prod.category}".lower()
+                if s_filter not in corpus:
+                    continue
+
+            products.append(prod)
         return products
 
     @staticmethod
     def get_products_by_category(category: str) -> List[Product]:
-        all_prods = ProductService.get_all_products()
-        return [p for p in all_prods if p.category.lower() == category.lower()]
+        return ProductService.get_all_products(category=category)
 
     @staticmethod
     def update_product(product_id: str, updates: Dict[str, Any]) -> Product:
@@ -72,9 +85,9 @@ class ProductService:
             if 'category' in updates:
                 data['category'] = updates['category'].strip()
             if 'price' in updates:
-                data['price'] = float(updates['price'])
+                data['price'] = parse_price(updates['price'])
             if 'stock' in updates:
-                stk = int(updates['stock'])
+                stk = parse_stock(updates['stock'])
                 data['stock'] = stk
                 data['status'] = "available" if stk > 0 else "out_of_stock"
             if 'description' in updates:
@@ -106,11 +119,16 @@ class ProductService:
         return _txn(db)
 
     @staticmethod
-    def get_raw_key_values(limit: int = 200) -> List[Dict[str, Any]]:
-        """Displays all raw FoundationDB keys with tuple unpack representation."""
+    def get_raw_key_values(limit: int = 200, prefix_filter: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Displays raw FoundationDB keys with tuple unpack representation.
+        Supports bounded range scan by prefix (e.g. 'order', 'product') or global scan.
+        """
         db = get_db()
-        # Scan from empty byte to highest byte
-        items = db.get_range(b'', b'\xff', limit=limit)
+        if prefix_filter and prefix_filter.strip() in APP_PREFIXES:
+            start, stop = get_prefix_range((prefix_filter.strip(),))
+            items = db.get_range(start, stop, limit=limit)
+        else:
+            items = db.get_range(b'', b'\xff', limit=limit)
         results = []
         for k_bytes, v_bytes in items:
             try:

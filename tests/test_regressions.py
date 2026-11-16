@@ -189,3 +189,55 @@ def test_api_backup_roundtrip_and_date_error():
     response=client.post('/api/restore',data={'backup_file':(BytesIO(exported.data),'snapshot.json')})
     assert response.status_code == 200
     assert client.get('/orders?status=ALL&from_date=bad').status_code == 400
+
+def test_stock_decimal_truncation_rejected():
+    """Verify that decimal stock (e.g. 2.9) is strictly rejected with ValueError instead of truncated to 2."""
+    from app.models.product import Product
+    import pytest
+    with pytest.raises(ValueError, match="Tồn kho phải là số nguyên không âm"):
+        Product(product_id='TEST_DEC', name='Decimal Stock', category='Test', price=100000, stock=2.9)
+
+    with pytest.raises(ValueError, match="Tồn kho phải là số nguyên không âm"):
+        Product(product_id='TEST_BOOL', name='Bool Stock', category='Test', price=100000, stock=True)
+
+    with pytest.raises(ValueError, match="Tồn kho phải là số nguyên không âm"):
+        Product(product_id='TEST_NEG', name='Negative Stock', category='Test', price=100000, stock=-5)
+
+    valid_prod = Product(product_id='TEST_INT', name='Int Stock', category='Test', price=100000, stock=5)
+    assert valid_prod.stock == 5
+
+def test_product_search_and_category_filtering():
+    """Verify that ProductService supports category and keyword filtering."""
+    from app.services.product_service import ProductService
+    from app.services.seed_service import SeedService
+    SeedService.populate_seed_data()
+    all_prods = ProductService.get_all_products()
+    assert len(all_prods) >= 8
+
+    # Search keyword
+    gaming_prods = ProductService.get_all_products(search='Gaming')
+    assert len(gaming_prods) >= 1
+    assert all('gaming' in f"{p.name} {p.description} {p.category}".lower() for p in gaming_prods)
+
+    # Filter by category
+    keyboards = ProductService.get_all_products(category='Bàn phím & Chuột')
+    assert len(keyboards) >= 1
+    assert all(p.category == 'Bàn phím & Chuột' for p in keyboards)
+
+def test_technova_storefront_and_routes_render():
+    """Verify that TechNova storefront and all key operational views render HTTP 200 with required elements."""
+    from app.main import create_app
+    client = create_app().test_client()
+    resp = client.get('/')
+    assert resp.status_code == 200
+    html = resp.get_data(as_text=True)
+    assert 'TechNova' in html
+    assert 'Khám Phá Theo Danh Mục' in html
+    assert 'Sản Phẩm Bán Chạy Nhất' in html
+    assert 'Apple FoundationDB' in html
+    assert 'Giao Dịch ACID' in html
+
+    # Verify search and buy_product_id routes
+    assert client.get('/products?q=P001').status_code == 200
+    assert client.get('/orders?buy_product_id=P001').status_code == 200
+    assert client.get('/kv-explorer?prefix=product').status_code == 200
