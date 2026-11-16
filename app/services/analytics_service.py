@@ -173,6 +173,7 @@ class AnalyticsService:
 
         return {
             "status": "success" if success else "error",
+            "message": "Kiểm thử ACID thành công" if success else (error_caught or "Kiểm thử ACID chưa đạt điều kiện rollback an toàn"),
             "test_name": "Kiểm thử Tính toàn vẹn ACID & Tự động Rollback khi thiếu tồn kho",
             "tested_product": valid_prod.product_id,
             "initial_stock": initial_stock,
