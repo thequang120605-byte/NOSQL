@@ -546,39 +546,39 @@ table,
     border-radius: 10px !important;
 }
 
-/* Global Dark Utility Overrides */
-.text-dark {
+/* Global Dark Utility Overrides (Scoped strictly to dark theme so it does not collide with TechNova light theme) */
+body:not(.technova-theme) .text-dark {
     color: #f8fafc !important;
 }
-.text-muted {
+body:not(.technova-theme) .text-muted {
     color: #94a3b8 !important;
 }
-.bg-light {
+body:not(.technova-theme) .bg-light {
     background-color: rgba(15, 23, 42, 0.6) !important;
 }
-.bg-white {
+body:not(.technova-theme) .bg-white {
     background-color: rgba(14, 23, 42, 0.85) !important;
     color: #f1f5f9 !important;
 }
-.border {
+body:not(.technova-theme) .border {
     border-color: rgba(56, 189, 248, 0.15) !important;
 }
-.btn-light {
+body:not(.technova-theme) .btn-light {
     background: rgba(15, 23, 42, 0.7) !important;
     border-color: rgba(56, 189, 248, 0.25) !important;
     color: #cbd5e1 !important;
 }
-.btn-light:hover {
+body:not(.technova-theme) .btn-light:hover {
     background: rgba(56, 189, 248, 0.15) !important;
     border-color: rgba(56, 189, 248, 0.45) !important;
     color: #ffffff !important;
 }
-pre {
+body:not(.technova-theme) pre {
     background-color: rgba(7, 11, 22, 0.95) !important;
     border: 1px solid rgba(56, 189, 248, 0.2) !important;
     color: #38bdf8 !important;
 }
-footer {
+body:not(.technova-theme) footer {
     background: rgba(8, 13, 27, 0.9) !important;
     border-color: rgba(255, 255, 255, 0.06) !important;
 }

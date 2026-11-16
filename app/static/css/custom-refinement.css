@@ -4,9 +4,11 @@
  */
 
 /* =========================================
-   1. THẨM MỸ: GIẢM GLOW, TĂNG ĐỘ RÕ NỘI DUNG
+   1. THẨM MỸ: GIẢM GLOW, TĂNG ĐỘ RÕ NỘI DUNG (Dark Theme Scope)
    ========================================= */
-.card, .stat-card-modern, .product-card-cyber {
+body:not(.technova-theme) .card,
+body:not(.technova-theme) .stat-card-modern,
+body:not(.technova-theme) .product-card-cyber {
     background: #111d31 !important;
     border-color: rgba(148, 163, 184, 0.24) !important;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22) !important;
@@ -14,7 +16,8 @@
     -webkit-backdrop-filter: none !important;
 }
 
-.card:hover, .product-card-cyber:hover {
+body:not(.technova-theme) .card:hover,
+body:not(.technova-theme) .product-card-cyber:hover {
     box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35) !important;
     border-color: rgba(56, 189, 248, 0.35) !important;
 }

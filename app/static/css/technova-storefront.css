@@ -23,10 +23,81 @@
 
 /* Base Body when storefront is active */
 body.technova-theme {
-    background-color: var(--tn-bg) !important;
+    background-color: #F8FAFC !important;
     background-image: none !important;
-    color: var(--tn-text-body) !important;
+    color: #334155 !important;
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* Bulletproof Contrast Overrides for TechNova Theme */
+body.technova-theme h1,
+body.technova-theme h2,
+body.technova-theme h3,
+body.technova-theme h4,
+body.technova-theme h5,
+body.technova-theme h6,
+body.technova-theme .text-dark,
+body.technova-theme .text-dark-emphasis,
+body.technova-theme .fw-bold.text-dark {
+    color: #0F172A !important;
+}
+
+body.technova-theme .text-muted,
+body.technova-theme .text-secondary {
+    color: #64748B !important;
+}
+
+body.technova-theme .bg-white {
+    background-color: #FFFFFF !important;
+    color: #0F172A !important;
+}
+
+body.technova-theme .bg-light {
+    background-color: #F8FAFC !important;
+    color: #0F172A !important;
+}
+
+body.technova-theme .card,
+body.technova-theme .technova-hero-card,
+body.technova-theme .technova-product-card,
+body.technova-theme .technova-category-card,
+body.technova-theme .technova-trust-bar,
+body.technova-theme .technova-ops-card {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05) !important;
+}
+
+body.technova-theme .technova-hero-card {
+    background: linear-gradient(135deg, #F1F5F4 0%, #E6EFEA 100%) !important;
+    border: 1px solid rgba(19, 78, 74, 0.15) !important;
+}
+
+/* ACID Test Button in Hero */
+.btn-technova-acid {
+    background: #FFFFFF !important;
+    border: 1.5px solid #CBD5E1 !important;
+    color: #0F172A !important;
+    font-weight: 600 !important;
+    border-radius: 999px !important;
+    padding: 0.6rem 1.35rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-technova-acid:hover {
+    background: #F8FAFC !important;
+    border-color: #134E4A !important;
+    color: #134E4A !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(19, 78, 74, 0.12) !important;
+}
+
+.btn-technova-acid i {
+    color: #D97706 !important;
 }
 
 /* Header & Navigation */
