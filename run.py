@@ -3,6 +3,7 @@ import os
 
 # Ensure current directory is in sys.path
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+os.environ.setdefault('FDB_MODE', 'local')
 
 from app.main import create_app
 from app.config import Config

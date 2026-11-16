@@ -13,7 +13,7 @@ class Config:
     
     # Auto-seed mock data on startup if database is empty
     AUTO_SEED = os.environ.get('AUTO_SEED', '0') == '1'
-    FDB_MODE = os.environ.get('FDB_MODE', 'real').strip().lower()
+    FDB_MODE = os.environ.get('FDB_MODE', 'local').strip().lower()
     
     # Server configuration
     HOST = '127.0.0.1'
